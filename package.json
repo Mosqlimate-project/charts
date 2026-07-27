@@ -15,7 +15,8 @@
     "typecheck": "tsc -b",
     "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
     "prepare": "husky",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "playground": "node playground/server.mjs"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
