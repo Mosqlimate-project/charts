@@ -1,0 +1,8 @@
+dist
+node_modules
+coverage
+*.tsbuildinfo
+.next
+build
+out
+packages/*/dist
