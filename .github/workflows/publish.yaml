@@ -1,0 +1,25 @@
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspaces
+      - name: Bump version from git tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION=${TAG#v}
+          npm version "$VERSION" --no-git-tag-version -w packages/core
+      - name: Publish to npm
+        run: npm publish -w packages/core --access public --provenance
