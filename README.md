@@ -12,7 +12,7 @@ Create a framework-agnostic charting SDK that allows anyone to embed Alertadengu
 
 ### Deliverables
 
-- [x] Create `@mosqlimate/core`
+- [x] Create `@mosqlimate/charts`
 - [x] API client
 - [x] Chart manager
 - [x] Renderer lifecycle
@@ -251,12 +251,12 @@ cdn.mosqlimate.org
 ## npm
 
 ```
-@mosqlimate/core
+@mosqlimate/charts
 ```
 
 ### Deliverables
 
-- [x] npm package (`@mosqlimate/core`)
+- [x] npm package (`@mosqlimate/charts`)
 - [x] ESM + CJS dual builds
 - [ ] CDN builds
 - [ ] Semantic versioning pipeline
