@@ -344,7 +344,7 @@ chart.export("png");
 # Repository Structure
 
 ```text
-mosqlimate-charts/
+@mosqlimate/charts/
 │
 ├── packages/
 │   ├── core/           ← Implemented (API client, renderers, web component, auto-init)
