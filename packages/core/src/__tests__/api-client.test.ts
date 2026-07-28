@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ApiClient } from "../api-client";
+import type { UF } from "../types";
 
 describe("ApiClient", () => {
   let fakeFetch: ReturnType<typeof vi.fn>;
@@ -336,7 +337,7 @@ describe("ApiClient", () => {
         params: {
           start: "2024-01-01",
           end: "2024-06-30",
-          uf: null as unknown as string,
+          uf: null as unknown as UF,
         },
       });
 

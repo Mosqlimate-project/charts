@@ -4,11 +4,7 @@ import { EChartsRenderer } from "./base";
 import { t } from "../i18n";
 
 export class TemperatureChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       temp_min: number;
@@ -103,11 +99,7 @@ export class TemperatureChart extends EChartsRenderer {
 }
 
 export class AccumulatedWaterfallChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       precip_tot: number;
@@ -195,11 +187,7 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
 }
 
 export class AirChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       umid_med: number;

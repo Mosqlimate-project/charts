@@ -75,7 +75,7 @@ export abstract class EChartsRenderer implements ChartRenderer {
     this.chart = null;
   }
 
-  protected abstract buildOption(
+  abstract buildOption(
     data: ChartData,
     theme: Theme,
     lang?: Language,

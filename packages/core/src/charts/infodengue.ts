@@ -4,11 +4,7 @@ import { EChartsRenderer } from "./base";
 import { t } from "../i18n";
 
 export class RtChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{ data_iniSE: string; Rt: number | null }>;
     const c = this.axisColors(theme);
 
