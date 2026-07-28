@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/Mosqlimate-project/charts/compare/v1.0.1...v1.0.2) (2026-07-28)
+
+### Bug Fixes
+
+- enable publish on npm step ([3826097](https://github.com/Mosqlimate-project/charts/commit/382609728723e8fe06c7f7847370bf92e9155a1a))
+- split release and publish into differnet workflows ([2d68996](https://github.com/Mosqlimate-project/charts/commit/2d68996f3a25dfb7d8c55562ae9b432529419ad5))
+
 ## [1.0.1](https://github.com/Mosqlimate-project/charts/compare/v1.0.0...v1.0.1) (2026-07-28)
 
 ### Bug Fixes

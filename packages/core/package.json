@@ -1,6 +1,6 @@
 {
   "name": "@mosqlimate/charts",
-  "version": "0.0.0",
+  "version": "1.0.2",
   "description": "Framework-agnostic charting SDK for Mosqlimate visualizations",
   "type": "module",
   "main": "./dist/index.cjs",
