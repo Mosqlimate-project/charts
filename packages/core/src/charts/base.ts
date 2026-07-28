@@ -14,12 +14,20 @@ export abstract class EChartsRenderer implements ChartRenderer {
     this.boundHandleResize = () => this.handleResize();
   }
 
+  private async loadECharts(): Promise<typeof import("echarts")> {
+    const g = globalThis as Record<string, unknown>;
+    if (typeof g.echarts === "object" && g.echarts !== null) {
+      return g.echarts as typeof import("echarts");
+    }
+    return await import("echarts");
+  }
+
   async render(
     container: HTMLElement,
     data: ChartData,
     options: RenderOptions,
   ): Promise<void> {
-    const echarts = await import("echarts");
+    const echarts = await this.loadECharts();
 
     if (this.chart) {
       this.chart.dispose();

@@ -127,12 +127,14 @@ describe("ApiClient", () => {
     });
 
     it("sends X-SDK-Key header when sdk_key is set", async () => {
-      fakeFetch.mockResolvedValue(okResponse({ total_cases: 42 }));
+      fakeFetch.mockResolvedValue(
+        okResponse([{ data_iniSE: "2024-01-07", Rt: 1.2 }]),
+      );
 
       const client = new ApiClient("https://test.api", "test-sdk-key-123");
       await client.fetchChart({
         target: document.createElement("div"),
-        chart: "infodengue/total-cases",
+        chart: "infodengue/rt",
         params: {
           disease: "dengue",
           geocode: 3550308,

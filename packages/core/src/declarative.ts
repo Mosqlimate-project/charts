@@ -3,7 +3,6 @@ import { Mosqlimate } from "./mosqlimate";
 
 const VALID_CHARTS: readonly string[] = [
   "infodengue/rt",
-  "infodengue/total-cases",
   "climate/temperature",
   "climate/accumulated-waterfall",
   "climate/umid-pressao-med",
@@ -68,6 +67,7 @@ function applyContainerStyle(el: HTMLElement, style: ContainerStyle): void {
 export interface AutoInitOptions {
   root?: ParentNode;
   sdk_key?: string;
+  api_key?: string;
 }
 
 export interface AutoInitResult {
@@ -83,6 +83,9 @@ export async function autoInit(
 
   if (options?.sdk_key) {
     Mosqlimate.setSdkKey(options.sdk_key);
+  }
+  if (options?.api_key) {
+    Mosqlimate.setApiKey(options.api_key);
   }
 
   const result: AutoInitResult = { rendered: 0, errors: [] };
@@ -131,7 +134,6 @@ export async function autoInit(
       ...(theme && { theme }),
       ...(width !== undefined && { width }),
       ...(height !== undefined && { height }),
-      ...(ds.apiBase !== undefined && { api_base: ds.apiBase }),
     };
 
     tasks.push(

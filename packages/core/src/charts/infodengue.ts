@@ -90,23 +90,3 @@ export class RtChart extends EChartsRenderer {
     };
   }
 }
-
-export class TotalCasesChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, _theme: Theme): EChartsOption {
-    const { total_cases } = data.data as { total_cases: number };
-
-    return {
-      graphic: {
-        type: "text",
-        left: "center",
-        top: "center",
-        style: {
-          text: `Total Cases: ${total_cases.toLocaleString()}`,
-          fontSize: 24,
-          fontWeight: "bold",
-          fill: "#333",
-        },
-      },
-    };
-  }
-}

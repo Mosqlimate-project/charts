@@ -1,0 +1,115 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:32px}
+h2{font-size:12px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.section{margin-bottom:40px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.log{font-family:monospace;font-size:12px;color:#6b7280;margin-bottom:32px}
+
+/*
+ * Container CSS inheritance
+ * ==========================
+ *
+ * These styles target the OUTER chart container only
+ * (both <div data-chart> and <mosqlimate-chart>).
+ *
+ * Chart internals (colors, fonts, grid lines, axes) are
+ * controlled by the `theme` option ("light", "dark", etc.)
+ * via ECharts config and are NOT affected by CSS.
+ */
+
+/* --- All charts at once --------------------------------- */
+
+chart-wrapper,
+[data-chart],
+mosqlimate-chart {
+  display: block;
+  height: 350px;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* --- Light card (default) ------------------------------- */
+
+.card-light,
+[data-chart]:not([data-theme]),
+mosqlimate-chart:not([theme]) {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+/* --- Dark card ------------------------------------------ */
+
+.card-dark,
+[data-chart="infodengue/rt"][data-theme="dark"],
+mosqlimate-chart[theme="dark"] {
+  background: #1a1a2e;
+  border: 1px solid #334155;
+}
+
+/* --- Different border styles per chart type ------------- */
+
+[data-chart^="infodengue"],
+mosqlimate-chart[chart^="infodengue"] {
+  border-left: 4px solid #ef4444;
+}
+
+[data-chart^="climate"],
+mosqlimate-chart[chart^="climate"] {
+  border-left: 4px solid #3b82f6;
+}
+
+[data-chart^="contaovos"],
+mosqlimate-chart[chart^="contaovos"] {
+  border-left: 4px solid #10b981;
+}
+
+/* --- Shadows -------------------------------------------- */
+
+[data-chart]:hover,
+mosqlimate-chart:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transition: box-shadow .2s;
+}
+
+/* --- Full-bleed (no padding) ---------------------------- */
+
+.bleed {
+  padding: 0;
+  border-radius: 0;
+}
+
+/* --- Specific chart overrides --------------------------- */
+
+.chart-rt {
+  border-left-width: 6px;
+  border-left-color: #f97316;
+}
+
+.waterfall-wrapper {
+  max-width: 900px;
+}
+.waterfall-wrapper > [data-chart],
+.waterfall-wrapper > mosqlimate-chart {
+  height: 350px;
+}
+
+/* --- Responsive ----------------------------------------- */
+
+@media(max-width:600px) {
+  [data-chart],
+  mosqlimate-chart {
+    height: 280px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+}
+
+/* --- Note on what CSS cannot do ------------------------- */
+/*
+ * ❌ Cannot change: axis colours, grid lines, font family,
+ *    tooltip style, legend position, series colours, etc.
+ *
+ * ✅ These are controlled by the `theme` attribute/option.
+ *    See EChartsRenderer for available themes.
+ */

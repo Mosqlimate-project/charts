@@ -24,7 +24,6 @@ vi.mock("../charts", () => {
   }
   return {
     RtChart: MockRenderer,
-    TotalCasesChart: MockRenderer,
     TemperatureChart: MockRenderer,
     AccumulatedWaterfallChart: MockRenderer,
     AirChart: MockRenderer,
@@ -63,10 +62,7 @@ describe("ChartManager", () => {
   describe("render", () => {
     it("creates instance with loading status then transitions to ready", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -89,10 +85,7 @@ describe("ChartManager", () => {
 
     it("sets error status on fetch failure", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("API error 401"));
 
@@ -108,10 +101,7 @@ describe("ChartManager", () => {
     });
 
     it("throws when container selector not found", async () => {
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       await expect(
         manager.render({
@@ -129,10 +119,7 @@ describe("ChartManager", () => {
 
     it("accepts HTMLElement directly as target", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -154,10 +141,7 @@ describe("ChartManager", () => {
   describe("lifecycle", () => {
     it("getInstance returns existing instance", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -177,10 +161,7 @@ describe("ChartManager", () => {
 
     it("destroy removes instance", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -201,10 +182,7 @@ describe("ChartManager", () => {
 
     it("destroyAll removes all instances", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -227,10 +205,7 @@ describe("ChartManager", () => {
   describe("status events", () => {
     it("emits loading and ready status", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -258,10 +233,7 @@ describe("ChartManager", () => {
 
     it("emits loading and error status on failure", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("fail"));
 
@@ -285,10 +257,7 @@ describe("ChartManager", () => {
 
     it("unsubscribe stops events", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -327,10 +296,7 @@ describe("ChartManager", () => {
 
   describe("setSdkKey", () => {
     it("delegates to api client", () => {
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       manager.setSdkKey("key-123");
       expect(mockSetSdkKey).toHaveBeenCalledWith("key-123");
@@ -340,10 +306,7 @@ describe("ChartManager", () => {
   describe("watermark", () => {
     it("appends watermark element after successful render", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -370,10 +333,7 @@ describe("ChartManager", () => {
 
     it("does not append watermark on render error", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("fail"));
 
@@ -388,10 +348,7 @@ describe("ChartManager", () => {
 
     it("removes watermark on destroy", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -415,10 +372,7 @@ describe("ChartManager", () => {
 
     it("sets container position to relative if static", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 

@@ -127,24 +127,6 @@ describe("autoInit", () => {
     );
   });
 
-  it("passes api_base from data-api-base", async () => {
-    const el = makeElement({
-      "data-chart": "infodengue/rt",
-      "data-disease": "dengue",
-      "data-geocode": "3550308",
-      "data-start": "2024-01-01",
-      "data-end": "2024-01-31",
-      "data-api-base": "https://custom.api",
-    });
-    document.body.appendChild(el);
-
-    await autoInit();
-
-    expect(mockRender).toHaveBeenCalledWith(
-      expect.objectContaining({ api_base: "https://custom.api" }),
-    );
-  });
-
   it("passes uf from data-uf attr", async () => {
     const el = makeElement({
       "data-chart": "contaovos/positivity",
@@ -277,7 +259,6 @@ describe("autoInit", () => {
     expect(opts.theme).toBeUndefined();
     expect(opts.width).toBeUndefined();
     expect(opts.height).toBeUndefined();
-    expect(opts.api_base).toBeUndefined();
   });
 
   it("scoped root only renders elements within that root", async () => {

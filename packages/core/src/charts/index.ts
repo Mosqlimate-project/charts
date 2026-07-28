@@ -1,6 +1,6 @@
 export { EChartsRenderer } from "./base";
 export type { EChartsOption } from "./base";
-export { RtChart, TotalCasesChart } from "./infodengue";
+export { RtChart } from "./infodengue";
 export {
   TemperatureChart,
   AccumulatedWaterfallChart,

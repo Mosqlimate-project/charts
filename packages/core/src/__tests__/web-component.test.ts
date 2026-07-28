@@ -134,26 +134,6 @@ describe("MosqlimateChart", () => {
       );
     });
 
-    it("passes api-base attribute", async () => {
-      const el = makeChartElement({
-        chart: "infodengue/rt",
-        disease: "dengue",
-        geocode: "3550308",
-        start: "2024-01-01",
-        end: "2024-01-31",
-        "api-base": "https://custom.api",
-      });
-      document.body.appendChild(el);
-
-      await vi.waitFor(() => {
-        expect(mockRender).toHaveBeenCalledOnce();
-      });
-
-      expect(mockRender).toHaveBeenCalledWith(
-        expect.objectContaining({ api_base: "https://custom.api" }),
-      );
-    });
-
     it("passes uf attribute", async () => {
       const el = makeChartElement({
         chart: "positivity",
@@ -247,7 +227,7 @@ describe("MosqlimateChart", () => {
         expect(mockRender).toHaveBeenCalledOnce();
       });
 
-      el.setAttribute("chart", "rt");
+      el.setAttribute("chart", "infodengue/rt");
 
       await new Promise((r) => setTimeout(r, 50));
 

@@ -1,13 +1,16 @@
 import { createServer } from "node:http";
 import { request as httpRequest } from "node:http";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { extname, resolve } from "node:path";
+import { extname, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(import.meta.dirname, "..");
+const DIRNAME = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(DIRNAME, "..");
 
-function loadEnv() {
+function loadEnvFile(filePath) {
   try {
-    const raw = require("node:fs").readFileSync(resolve(ROOT, ".env"), "utf-8");
+    const raw = readFileSync(filePath, "utf-8");
     for (const line of raw.split("\n")) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith("#")) continue;
@@ -17,13 +20,27 @@ function loadEnv() {
       const val = trimmed.slice(idx + 1).trim();
       if (!(key in process.env)) process.env[key] = val;
     }
-  } catch {}
+    console.error(`  Loaded env from ${filePath}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
-loadEnv();
+
+// Load charts' .env first, then Data-platform's as override
+const DATA_PLATFORM_ROOT = resolve(ROOT, "..", "Data-platform");
+loadEnvFile(resolve(ROOT, ".env"));
+loadEnvFile(resolve(DATA_PLATFORM_ROOT, ".env"));
 
 const PORT = Number(process.env.PORT) || 3000;
-const API_BASE = process.env.MOSQLIMATE_API_BASE || "http://localhost:8042";
-const ADMIN_UIDKEY = process.env.ADMIN_UIDKEY || "";
+const API_BASE = process.env.MOSQLIMATE_API_BASE || "https://api.mosqlimate.org";
+
+const API_KEY = process.env.API_KEY;
+const SDK_KEY = process.env.SDK_KEY || API_KEY;
+if (!SDK_KEY || !API_KEY) {
+  console.error("\n  ERROR: SDK_KEY and API_KEY are required. Set both in .env.\n");
+  process.exit(1);
+}
 
 const MIME = {
   ".html": "text/html",
@@ -39,39 +56,84 @@ const MIME = {
   ".d.cts": "text/plain",
 };
 
-function proxyRequest(req, res) {
-  const target = new URL(req.url, API_BASE);
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-SDK-Key, X-UID-Key, Authorization",
+  "Access-Control-Max-Age": "86400",
+};
 
-  const headers = { ...req.headers };
-  delete headers.host;
-  headers.host = target.host;
-  if (ADMIN_UIDKEY) {
-    headers["x-uid-key"] = ADMIN_UIDKEY;
+function writeCorsHeaders(res) {
+  for (const [key, val] of Object.entries(CORS_HEADERS)) {
+    res.setHeader(key, val);
+  }
+}
+
+function proxyRequest(req, res) {
+  const MAX_REDIRECTS = 5;
+
+  function doRequest(url, redirects) {
+    const headers = { ...req.headers };
+    delete headers.host;
+    headers.host = url.host;
+    headers["X-SDK-Key"] = SDK_KEY;
+    headers["X-UID-Key"] = API_KEY;
+
+    const proxyReq = httpRequest(
+      url,
+      { method: req.method, headers },
+      (proxyRes) => {
+        if (redirects > 0 && proxyRes.statusCode >= 300 && proxyRes.statusCode < 400 && proxyRes.headers.location) {
+          const next = new URL(proxyRes.headers.location, url);
+          console.error(`  proxy ${url} -> ${next} (${proxyRes.statusCode})`);
+          doRequest(next, redirects - 1);
+          return;
+        }
+
+        const chunks = [];
+        proxyRes.on("data", (chunk) => chunks.push(chunk));
+        proxyRes.on("end", () => {
+          const body = Buffer.concat(chunks);
+          const responseHeaders = { ...proxyRes.headers };
+          responseHeaders["access-control-allow-origin"] = "*";
+
+          if (proxyRes.statusCode >= 400) {
+            console.error(`  chart error: ${url} -> ${proxyRes.statusCode} ${body.toString()}`);
+            res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json", ...CORS_HEADERS });
+            res.end(JSON.stringify({ error: `chart API error: ${proxyRes.statusCode}`, detail: body.toString() }));
+            return;
+          }
+
+          res.writeHead(proxyRes.statusCode, responseHeaders);
+          res.end(body);
+        });
+      },
+    );
+
+    proxyReq.on("error", (err) => {
+      console.error(`  proxy error: ${err.message}`);
+      if (!res.headersSent) {
+        res.writeHead(502, { "Content-Type": "application/json", ...CORS_HEADERS });
+      }
+      res.end(JSON.stringify({ error: err.message }));
+    });
+
+    req.pipe(proxyReq);
   }
 
-  const proxyReq = httpRequest(
-    target,
-    { method: req.method, headers },
-    (proxyRes) => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers);
-      proxyRes.pipe(res);
-    },
-  );
-
-  proxyReq.on("error", (err) => {
-    console.error(`  proxy error: ${err.message}`);
-    if (!res.headersSent) {
-      res.writeHead(502, { "Content-Type": "application/json" });
-    }
-    res.end(JSON.stringify({ error: err.message }));
-  });
-
-  req.pipe(proxyReq);
+  doRequest(new URL(req.url, API_BASE), MAX_REDIRECTS);
 }
 
 async function handler(req, res) {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   let pathname = url.pathname;
+
+  if (req.method === "OPTIONS") {
+    writeCorsHeaders(res);
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   if (pathname === "/") pathname = "/playground/index.html";
 
@@ -81,8 +143,17 @@ async function handler(req, res) {
 
   try {
     const filePath = resolve(ROOT, `.${pathname}`);
-    const data = await readFile(filePath);
+    let data = await readFile(filePath);
     const ext = extname(filePath);
+    if (extname(pathname) === ".html") {
+      data = Buffer.from(
+        data.toString("utf-8").replace(
+          "<!--CONFIG-->",
+          `<script>window.__MOSQLIMATE_API_KEY__=${JSON.stringify(API_KEY)}</script>`,
+        ),
+      );
+    }
+    writeCorsHeaders(res);
     res.writeHead(200, {
       "Content-Type": MIME[ext] ?? "application/octet-stream",
       "Cache-Control": "no-cache",
@@ -94,9 +165,22 @@ async function handler(req, res) {
   }
 }
 
-const server = createServer(handler);
-server.listen(PORT, () => {
-  console.log(`\n  Mosqlimate Playground\n`);
-  console.log(`  Local:   http://localhost:${PORT}`);
-  console.log(`  API:     ${API_BASE} (proxied)\n`);
-});
+function startServer(port) {
+  const server = createServer(handler);
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.log(`  Port ${port} in use, trying ${port + 1}...`);
+      startServer(port + 1);
+    } else {
+      console.error(`  Server error: ${err.message}`);
+      process.exit(1);
+    }
+  });
+  server.listen(port, () => {
+    console.log(`\n  Mosqlimate Charts Playground\n`);
+    console.log(`  Local:   http://localhost:${port}`);
+    console.log(`  API:     ${API_BASE} (proxied)\n`);
+  });
+}
+
+startServer(PORT);

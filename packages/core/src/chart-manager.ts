@@ -12,7 +12,6 @@ import { PlaceholderRenderer } from "./renderer";
 import { createWatermarkElement, removeWatermarkElement } from "./watermark";
 import {
   RtChart,
-  TotalCasesChart,
   TemperatureChart,
   AccumulatedWaterfallChart,
   AirChart,
@@ -34,13 +33,22 @@ export class ChartManager {
   private config: MosqlimateConfig;
   private statusListeners: StatusChangeCallback[] = [];
 
-  constructor(config: MosqlimateConfig, sdk_key?: string) {
+  constructor(
+    config: MosqlimateConfig,
+    api_base: string,
+    sdk_key?: string,
+    api_key?: string,
+  ) {
     this.config = config;
-    this.api = new ApiClient(config.api_base, sdk_key);
+    this.api = new ApiClient(api_base, sdk_key, api_key);
   }
 
   setSdkKey(key: string): void {
     this.api.setSdkKey(key);
+  }
+
+  setApiKey(key: string): void {
+    this.api.setApiKey(key);
   }
 
   async render<T extends ChartName>(
@@ -139,7 +147,6 @@ export class ChartManager {
   private createRenderer(chart: ChartName): ChartRenderer {
     const renderers: Record<ChartName, () => ChartRenderer> = {
       "infodengue/rt": () => new RtChart(),
-      "infodengue/total-cases": () => new TotalCasesChart(),
       "climate/temperature": () => new TemperatureChart(),
       "climate/accumulated-waterfall": () => new AccumulatedWaterfallChart(),
       "climate/umid-pressao-med": () => new AirChart(),

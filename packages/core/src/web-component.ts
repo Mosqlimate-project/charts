@@ -11,7 +11,6 @@ const ATTR_LIST = [
   "theme",
   "width",
   "height",
-  "api-base",
 ] as const;
 
 function parseNumber(value: string | null): number | undefined {
@@ -39,7 +38,9 @@ export class MosqlimateChart extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this._render();
+    Promise.resolve().then(() => {
+      if (this.isConnected) this._render();
+    });
   }
 
   disconnectedCallback(): void {
@@ -86,7 +87,6 @@ export class MosqlimateChart extends HTMLElement {
     const theme = this.getAttribute("theme") as Theme | null;
     const width = parseNumber(this.getAttribute("width"));
     const height = parseNumber(this.getAttribute("height"));
-    const apiBase = this.getAttribute("api-base");
 
     const params: Record<string, string | number> = {};
     if (disease) params.disease = disease;
@@ -102,7 +102,6 @@ export class MosqlimateChart extends HTMLElement {
       ...(theme ? { theme } : {}),
       ...(width !== undefined ? { width } : {}),
       ...(height !== undefined ? { height } : {}),
-      ...(apiBase ? { api_base: apiBase } : {}),
     }).then((instance) => {
       this._chartId = instance.id;
     });
@@ -120,3 +119,5 @@ export function registerChartElement(): void {
 export function isChartElementRegistered(): boolean {
   return !!customElements.get(TAG_NAME);
 }
+
+registerChartElement();

@@ -31,15 +31,12 @@ describe("Mosqlimate singleton", () => {
   });
 
   it("configure creates a new manager", () => {
-    expect(() =>
-      Mosqlimate.configure({ api_base: "https://custom.api", theme: "dark" }),
-    ).not.toThrow();
+    expect(() => Mosqlimate.configure({ theme: "dark" })).not.toThrow();
   });
 
   it("configure accepts sdk_key", () => {
     expect(() =>
       Mosqlimate.configure({
-        api_base: "https://custom.api",
         theme: "dark",
         sdk_key: "test-key",
       }),
@@ -47,18 +44,18 @@ describe("Mosqlimate singleton", () => {
   });
 
   it("setSdkKey does not throw", () => {
-    Mosqlimate.configure({ api_base: "https://test.api" });
+    Mosqlimate.configure({});
     expect(() => Mosqlimate.setSdkKey("key-123")).not.toThrow();
   });
 
   it("render delegates to manager", async () => {
-    Mosqlimate.configure({ api_base: "https://test.api" });
+    Mosqlimate.configure({});
     const container = document.createElement("div");
     document.body.appendChild(container);
 
     const instance = await Mosqlimate.render({
       target: container,
-      chart: "rt",
+      chart: "infodengue/rt",
       params: {
         disease: "dengue",
         geocode: 3550308,
@@ -72,17 +69,17 @@ describe("Mosqlimate singleton", () => {
   });
 
   it("destroy does not throw", () => {
-    Mosqlimate.configure({ api_base: "https://test.api" });
+    Mosqlimate.configure({});
     expect(() => Mosqlimate.destroy("mc-0")).not.toThrow();
   });
 
   it("destroyAll does not throw", () => {
-    Mosqlimate.configure({ api_base: "https://test.api" });
+    Mosqlimate.configure({});
     expect(() => Mosqlimate.destroyAll()).not.toThrow();
   });
 
   it("onStatusChange returns unsubscribe function", () => {
-    Mosqlimate.configure({ api_base: "https://test.api" });
+    Mosqlimate.configure({});
     const unsub = Mosqlimate.onStatusChange(() => {});
     expect(typeof unsub).toBe("function");
   });

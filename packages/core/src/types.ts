@@ -31,7 +31,7 @@ export type UF =
 
 export type ChartCategory = "infodengue" | "climate" | "contaovos";
 
-export type InfodengueChart = "infodengue/rt" | "infodengue/total-cases";
+export type InfodengueChart = "infodengue/rt";
 
 export type ClimateChart =
   | "climate/temperature"
@@ -95,10 +95,6 @@ export interface InfodengueRtRow {
   Rt: number | null;
 }
 
-export interface InfodengueTotalCases {
-  total_cases: number;
-}
-
 export interface ClimateTemperatureRow {
   date: string;
   epiweek: number;
@@ -150,7 +146,6 @@ export interface ContaOvosMapScatterRow {
 
 export type ChartDataMap = {
   "infodengue/rt": InfodengueRtRow[];
-  "infodengue/total-cases": InfodengueTotalCases;
   "climate/temperature": ClimateTemperatureRow[];
   "climate/accumulated-waterfall": ClimateWaterfallRow[];
   "climate/umid-pressao-med": ClimateHumidityPressureRow[];
@@ -175,7 +170,6 @@ export interface RenderOptions<T extends ChartName = ChartName> {
   theme?: Theme;
   width?: number;
   height?: number;
-  api_base?: string;
 }
 
 // --- Renderer contract ---
@@ -206,7 +200,6 @@ export interface ChartInstance {
 // --- Config ---
 
 export interface MosqlimateConfig {
-  api_base: string;
   theme: Theme;
 }
 
