@@ -8,6 +8,7 @@ import type {
 import { ChartManager } from "./chart-manager";
 import { autoInit } from "./declarative";
 import type { AutoInitOptions, AutoInitResult } from "./declarative";
+import { registerChartElement } from "./web-component";
 
 interface InternalConfig extends MosqlimateConfig {
   api_base: string;
@@ -97,6 +98,9 @@ export const Mosqlimate: MosqlimateStatic = {
   },
 
   autoInit(options?: AutoInitOptions) {
+    if (options?.sdk_key) Mosqlimate.setSdkKey(options.sdk_key);
+    if (options?.api_key) Mosqlimate.setApiKey(options.api_key);
+    registerChartElement();
     return autoInit(options);
   },
 };

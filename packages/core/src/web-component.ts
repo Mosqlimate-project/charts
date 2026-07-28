@@ -119,5 +119,3 @@ export function registerChartElement(): void {
 export function isChartElementRegistered(): boolean {
   return !!customElements.get(TAG_NAME);
 }
-
-registerChartElement();

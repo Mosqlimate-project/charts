@@ -3,6 +3,7 @@ import { ChartManager } from "../chart-manager";
 
 const mockFetchChart = vi.fn();
 const mockSetSdkKey = vi.fn();
+const mockSetApiKey = vi.fn();
 
 vi.mock("../api-client", () => {
   return {
@@ -10,6 +11,7 @@ vi.mock("../api-client", () => {
       return {
         fetchChart: mockFetchChart,
         setSdkKey: mockSetSdkKey,
+        setApiKey: mockSetApiKey,
       };
     }),
   };
@@ -100,6 +102,42 @@ describe("ChartManager", () => {
       expect(container.querySelector("[role=alert]")).toBeTruthy();
     });
 
+    it("wraps non-Error rejection in Error object", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockRejectedValue("raw string error");
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(instance.status).toBe("error");
+      expect(instance.error?.message).toBe("raw string error");
+    });
+
+    it("falls back to PlaceholderRenderer for unknown chart name", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "unknown/chart" as never,
+        params: { start: "2024-01-01", end: "2024-01-31" },
+      });
+
+      expect(instance.status).toBe("ready");
+    });
+
     it("throws when container selector not found", async () => {
       const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
@@ -135,6 +173,30 @@ describe("ChartManager", () => {
       });
 
       expect(instance.container).toBe(container);
+    });
+
+    it("renders all chart types successfully", async () => {
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      const charts = [
+        "climate/accumulated-waterfall",
+        "climate/umid-pressao-med",
+        "contaovos/eggs_density",
+        "contaovos/positivity",
+        "contaovos/map",
+        "contaovos/map/scatter",
+      ] as const;
+
+      for (const chart of charts) {
+        const container = createContainer();
+        const instance = await manager.render({
+          target: container,
+          chart,
+          params: { start: "2024-01-01", end: "2024-12-31" },
+        });
+        expect(instance.status).toBe("ready");
+      }
     });
   });
 
@@ -180,6 +242,11 @@ describe("ChartManager", () => {
       expect(manager.getInstance(instance.id)).toBeUndefined();
     });
 
+    it("destroy does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      expect(() => manager.destroy("nonexistent")).not.toThrow();
+    });
+
     it("destroyAll removes all instances", async () => {
       const container = createContainer();
       const manager = new ChartManager({ theme: "light" }, "https://test.api");
@@ -199,6 +266,85 @@ describe("ChartManager", () => {
 
       manager.destroyAll();
       expect(manager.getInstance("mc-0")).toBeUndefined();
+    });
+
+    it("update calls renderer.update on existing instance", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      const newData = {
+        chart: "infodengue/rt" as const,
+        category: "infodengue" as const,
+        data: [{ data_iniSE: "2024-02-01", Rt: 0.8 }],
+      };
+      manager.update(instance.id, newData);
+      expect(instance.data).toEqual(newData);
+    });
+
+    it("update does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      manager.update("nonexistent", {} as never);
+    });
+
+    it("resize does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      manager.resize("nonexistent", 800, 600);
+    });
+
+    it("resize calls renderer.resize on existing instance", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      const renderer = instance.renderer;
+      manager.resize(instance.id, 800, 600);
+      expect(renderer.resize).toHaveBeenCalledWith(800, 600);
+    });
+
+    it("accepts string CSS selector as target", async () => {
+      const container = createContainer();
+      container.id = "test-chart";
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: "#test-chart",
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(instance.container).toBe(container);
     });
   });
 
@@ -300,6 +446,15 @@ describe("ChartManager", () => {
 
       manager.setSdkKey("key-123");
       expect(mockSetSdkKey).toHaveBeenCalledWith("key-123");
+    });
+  });
+
+  describe("setApiKey", () => {
+    it("delegates to api client", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      manager.setApiKey("api-key-456");
+      expect(mockSetApiKey).toHaveBeenCalledWith("api-key-456");
     });
   });
 

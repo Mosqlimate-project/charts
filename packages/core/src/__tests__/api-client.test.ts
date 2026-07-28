@@ -147,6 +147,45 @@ describe("ApiClient", () => {
       expect(opts.headers).toEqual({ "X-SDK-Key": "test-sdk-key-123" });
     });
 
+    it("sends X-UID-Key header when api_key is set in constructor", async () => {
+      fakeFetch.mockResolvedValue(okResponse([]));
+      const client = new ApiClient(
+        "https://test.api",
+        undefined,
+        "test-api-key",
+      );
+      await client.fetchChart({
+        target: document.createElement("div"),
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+      const [, opts] = fakeFetch.mock.calls[0];
+      expect(opts.headers).toEqual({ "X-UID-Key": "test-api-key" });
+    });
+
+    it("setApiKey updates X-UID-Key for subsequent requests", async () => {
+      fakeFetch.mockResolvedValue(okResponse([]));
+      const client = new ApiClient("https://test.api");
+      client.setApiKey("new-api-key");
+      await client.fetchChart({
+        target: document.createElement("div"),
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+      const [, opts] = fakeFetch.mock.calls[0];
+      expect(opts.headers).toEqual({ "X-UID-Key": "new-api-key" });
+    });
+
     it("setSdkKey updates header for subsequent requests", async () => {
       fakeFetch.mockResolvedValue(okResponse([]));
 
@@ -187,6 +226,28 @@ describe("ApiClient", () => {
       ).rejects.toThrow("API error 401: Unauthorized");
     });
 
+    it("falls back to Unknown error when response text() fails", async () => {
+      fakeFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: () => Promise.reject(new Error("stream error")),
+      } as Response);
+
+      const client = new ApiClient("https://test.api");
+      await expect(
+        client.fetchChart({
+          target: document.createElement("div"),
+          chart: "infodengue/rt",
+          params: {
+            disease: "dengue",
+            geocode: 3550308,
+            start: "2024-01-01",
+            end: "2024-01-31",
+          },
+        }),
+      ).rejects.toThrow("API error 500: Unknown error");
+    });
+
     it("throws on network failure", async () => {
       fakeFetch.mockRejectedValue(new Error("Network error"));
 
@@ -198,6 +259,42 @@ describe("ApiClient", () => {
           params: { geocode: 3550308, start: "2024-01-01", end: "2024-01-31" },
         }),
       ).rejects.toThrow("Network error");
+    });
+
+    it("throws descriptive CORS error on TypeError with Failed to fetch", async () => {
+      fakeFetch.mockRejectedValue(new TypeError("Failed to fetch"));
+
+      const client = new ApiClient("https://test.api");
+      await expect(
+        client.fetchChart({
+          target: document.createElement("div"),
+          chart: "infodengue/rt",
+          params: {
+            disease: "dengue",
+            geocode: 3550308,
+            start: "2024-01-01",
+            end: "2024-01-31",
+          },
+        }),
+      ).rejects.toThrow("CORS error");
+    });
+
+    it("throws generic message on TypeError with non-Failed-to-fetch message", async () => {
+      fakeFetch.mockRejectedValue(new TypeError("Some other type error"));
+
+      const client = new ApiClient("https://test.api");
+      await expect(
+        client.fetchChart({
+          target: document.createElement("div"),
+          chart: "infodengue/rt",
+          params: {
+            disease: "dengue",
+            geocode: 3550308,
+            start: "2024-01-01",
+            end: "2024-01-31",
+          },
+        }),
+      ).rejects.toThrow("Some other type error");
     });
 
     it("excludes undefined/null params from query string", async () => {
@@ -227,6 +324,24 @@ describe("ApiClient", () => {
 
       const [url] = fakeFetch.mock.calls[0];
       expect(url).toContain("uf=SP");
+    });
+
+    it("excludes explicit null params from query string", async () => {
+      fakeFetch.mockResolvedValue(okResponse([]));
+
+      const client = new ApiClient("https://test.api");
+      await client.fetchChart({
+        target: document.createElement("div"),
+        chart: "contaovos/eggs_density",
+        params: {
+          start: "2024-01-01",
+          end: "2024-06-30",
+          uf: null as unknown as string,
+        },
+      });
+
+      const [url] = fakeFetch.mock.calls[0];
+      expect(url).not.toContain("uf=");
     });
   });
 });

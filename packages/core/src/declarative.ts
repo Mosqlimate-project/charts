@@ -58,9 +58,7 @@ function parseContainerStyle(dataset: DOMStringMap): ContainerStyle {
 
 function applyContainerStyle(el: HTMLElement, style: ContainerStyle): void {
   for (const [prop, val] of Object.entries(style)) {
-    if (val !== undefined) {
-      (el.style as unknown as Record<string, string>)[prop] = val;
-    }
+    (el.style as unknown as Record<string, string>)[prop] = val;
   }
 }
 

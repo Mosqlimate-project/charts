@@ -125,6 +125,7 @@ function proxyRequest(req, res) {
 }
 
 async function handler(req, res) {
+  console.error(`  => ${req.method} ${req.url}`);
   const url = new URL(req.url, `http://localhost:${PORT}`);
   let pathname = url.pathname;
 
@@ -179,7 +180,8 @@ function startServer(port) {
   server.listen(port, () => {
     console.log(`\n  Mosqlimate Charts Playground\n`);
     console.log(`  Local:   http://localhost:${port}`);
-    console.log(`  API:     ${API_BASE} (proxied)\n`);
+    console.log(`  Backend: ${API_BASE}`);
+    console.log(`  Proxy:   /api/* -> ${API_BASE} (when used)\n`);
   });
 }
 

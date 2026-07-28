@@ -219,8 +219,10 @@ export class AirChart extends EChartsRenderer {
       yAxis: [
         {
           type: "value",
-          name: "Pressure (hPa)",
+          name: "Pressure (atm)",
           position: "left",
+          min: "dataMin",
+          max: (value: { max: number }) => value.max + 0.02,
           nameTextStyle: { color: c.text },
           axisLabel: { color: c.text },
           splitLine: { lineStyle: { color: c.line } },
