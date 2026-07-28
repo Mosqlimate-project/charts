@@ -103,6 +103,32 @@ describe("RtChart", () => {
     const opt = chart.buildOption(data, "dark");
     expect(opt.series).toBeDefined();
   });
+
+  it("uses Portuguese translations when lang is pt", () => {
+    const chart = new TemperatureChart();
+    const data = {
+      chart: "climate/temperature",
+      category: "climate",
+      data: [{ date: "2024-01-01", temp_min: 18, temp_med: 24, temp_max: 30 }],
+    };
+    const opt = chart.buildOption(data, "light", "pt");
+    expect(opt.legend?.data).toContain("Temp Máx");
+    expect(opt.legend?.data).toContain("Temp Mín");
+  });
+});
+
+import { t } from "../i18n";
+
+describe("i18n t()", () => {
+  it("falls back to English for unknown key", () => {
+    const result = t("nonexistent.key", "pt");
+    expect(result).toBe("nonexistent.key");
+  });
+
+  it("returns key when no lang and key is unknown", () => {
+    const result = t("completely.missing");
+    expect(result).toBe("completely.missing");
+  });
 });
 
 describe("TemperatureChart", () => {

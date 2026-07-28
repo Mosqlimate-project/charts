@@ -1,4 +1,4 @@
-import type { ChartName, RenderOptions, Theme } from "./types";
+import type { ChartName, Language, RenderOptions, Theme } from "./types";
 import { Mosqlimate } from "./mosqlimate";
 
 const VALID_CHARTS: readonly string[] = [
@@ -66,6 +66,7 @@ export interface AutoInitOptions {
   root?: ParentNode;
   sdk_key?: string;
   api_key?: string;
+  language?: Language;
 }
 
 export interface AutoInitResult {
@@ -84,6 +85,9 @@ export async function autoInit(
   }
   if (options?.api_key) {
     Mosqlimate.setApiKey(options.api_key);
+  }
+  if (options?.language) {
+    Mosqlimate.setLanguage(options.language);
   }
 
   const result: AutoInitResult = { rendered: 0, errors: [] };
@@ -106,6 +110,7 @@ export async function autoInit(
     const height = parseNumber(ds.height);
     const geocode = parseNumber(ds.geocode);
     const theme = ds.theme as Theme | undefined;
+    const language = (ds.language as Language | undefined) ?? options?.language;
 
     if (theme && !VALID_THEMES.includes(theme)) {
       result.errors.push({
@@ -130,6 +135,7 @@ export async function autoInit(
       chart: chart as ChartName,
       params: params as unknown as RenderOptions["params"],
       ...(theme && { theme }),
+      ...(language && { language }),
       ...(width !== undefined && { width }),
       ...(height !== undefined && { height }),
     };

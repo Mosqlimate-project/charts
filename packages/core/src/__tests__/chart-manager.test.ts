@@ -458,8 +458,16 @@ describe("ChartManager", () => {
     });
   });
 
+  describe("setLanguage", () => {
+    it("updates config language", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      manager.setLanguage("pt");
+    });
+  });
+
   describe("watermark", () => {
-    it("appends watermark element after successful render", async () => {
+    it("applies watermark as container background after successful render", async () => {
       const container = createContainer();
       const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
@@ -476,17 +484,15 @@ describe("ChartManager", () => {
         },
       });
 
-      const wm = container.querySelector(".mosqlimate-watermark");
-      expect(wm).toBeTruthy();
-      expect(wm?.getAttribute("aria-hidden")).toBe("true");
-      const style = wm?.getAttribute("style") ?? "";
-      expect(style).toContain("position:");
-      expect(style).toContain("absolute");
-      expect(style).toContain("opacity:");
-      expect(style).toContain("0.3");
+      expect(container.style.backgroundImage).toContain("url(");
+      expect(container.style.backgroundPosition).toMatch(
+        /(top 30px right 30px|right 30px top 30px)/,
+      );
+      expect(container.style.backgroundRepeat).toBe("no-repeat");
+      expect(container.style.backgroundSize).toBe("100px 100px");
     });
 
-    it("does not append watermark on render error", async () => {
+    it("does not apply watermark on render error", async () => {
       const container = createContainer();
       const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
@@ -498,7 +504,7 @@ describe("ChartManager", () => {
         params: { geocode: 3550308, start: "2024-01-01", end: "2024-01-31" },
       });
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeNull();
+      expect(container.style.backgroundImage).toBe("");
     });
 
     it("removes watermark on destroy", async () => {
@@ -518,11 +524,11 @@ describe("ChartManager", () => {
         },
       });
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeTruthy();
+      expect(container.style.backgroundImage).toContain("url(");
 
       manager.destroy(instance.id);
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeNull();
+      expect(container.style.backgroundImage).toBe("");
     });
 
     it("sets container position to relative if static", async () => {
@@ -543,6 +549,49 @@ describe("ChartManager", () => {
       });
 
       expect(container.style.position).toBe("relative");
+    });
+
+    it("uses dark theme background color", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "dark" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(container.style.backgroundColor).toBe("rgb(26, 26, 46)");
+    });
+
+    it("does not override existing container background", async () => {
+      const container = createContainer();
+      container.style.backgroundColor = "#f0f0f0";
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(container.style.backgroundColor).toBe("rgb(240, 240, 240)");
+
+      manager.destroy(instance.id);
     });
   });
 });

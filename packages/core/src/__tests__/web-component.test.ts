@@ -196,6 +196,26 @@ describe("MosqlimateChart", () => {
       );
     });
 
+    it("passes language attribute", async () => {
+      const el = makeChartElement({
+        chart: "infodengue/rt",
+        disease: "dengue",
+        geocode: "3550308",
+        start: "2024-01-01",
+        end: "2024-01-31",
+        language: "pt",
+      });
+      document.body.appendChild(el);
+
+      await vi.waitFor(() => {
+        expect(mockRender).toHaveBeenCalledOnce();
+      });
+
+      expect(mockRender).toHaveBeenCalledWith(
+        expect.objectContaining({ language: "pt" }),
+      );
+    });
+
     it("passes uf attribute", async () => {
       const el = makeChartElement({
         chart: "positivity",

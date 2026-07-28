@@ -47,6 +47,7 @@ export type ContaOvosChart =
 export type ChartName = InfodengueChart | ClimateChart | ContaOvosChart;
 
 export type Theme = "light" | "dark" | "minimal" | "publication" | "dashboard";
+export type Language = "en" | "pt";
 
 // --- Input params ---
 
@@ -168,6 +169,7 @@ export interface RenderOptions<T extends ChartName = ChartName> {
   chart: T;
   params: ChartParams;
   theme?: Theme;
+  language?: Language;
   width?: number;
   height?: number;
 }
@@ -201,6 +203,7 @@ export interface ChartInstance {
 
 export interface MosqlimateConfig {
   theme: Theme;
+  language?: Language;
 }
 
 export type StatusChangeCallback = (event: StatusChangeEvent) => void;

@@ -1,4 +1,4 @@
-import type { ChartName, Theme } from "./types";
+import type { ChartName, Language, Theme } from "./types";
 import { Mosqlimate } from "./mosqlimate";
 
 const ATTR_LIST = [
@@ -11,6 +11,7 @@ const ATTR_LIST = [
   "theme",
   "width",
   "height",
+  "language",
 ] as const;
 
 function parseNumber(value: string | null): number | undefined {
@@ -85,6 +86,7 @@ export class MosqlimateChart extends HTMLElement {
     const end = this.getAttribute("end");
     const uf = this.getAttribute("uf");
     const theme = this.getAttribute("theme") as Theme | null;
+    const language = this.getAttribute("language") as Language | null;
     const width = parseNumber(this.getAttribute("width"));
     const height = parseNumber(this.getAttribute("height"));
 
@@ -100,6 +102,7 @@ export class MosqlimateChart extends HTMLElement {
       chart,
       params: params as never,
       ...(theme ? { theme } : {}),
+      ...(language ? { language } : {}),
       ...(width !== undefined ? { width } : {}),
       ...(height !== undefined ? { height } : {}),
     }).then((instance) => {

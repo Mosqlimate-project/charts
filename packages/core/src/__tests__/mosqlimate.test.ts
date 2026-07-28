@@ -13,6 +13,7 @@ vi.mock("../chart-manager", () => {
         destroyAll: vi.fn(),
         setSdkKey: vi.fn(),
         setApiKey: vi.fn(),
+        setLanguage: vi.fn(),
         getInstance: vi.fn(),
         onStatusChange: vi.fn().mockReturnValue(() => {}),
       };
@@ -132,6 +133,19 @@ describe("Mosqlimate singleton", () => {
     Mosqlimate.configure({});
     const unsub = Mosqlimate.onStatusChange(() => {});
     expect(typeof unsub).toBe("function");
+  });
+
+  it("setLanguage does not throw", () => {
+    Mosqlimate.configure({});
+    expect(() => Mosqlimate.setLanguage("pt")).not.toThrow();
+  });
+
+  it("autoInit passes language to declarative and sets language before registration", async () => {
+    Mosqlimate.configure({});
+    const result = await Mosqlimate.autoInit({
+      language: "pt",
+    });
+    expect(result.rendered).toBe(6);
   });
 
   it("autoInit returns result from declarative autoInit", async () => {

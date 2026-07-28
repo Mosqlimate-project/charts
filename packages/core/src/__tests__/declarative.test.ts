@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockRender, mockSetSdkKey, mockSetApiKey } = vi.hoisted(() => ({
-  mockRender: vi.fn(),
-  mockSetSdkKey: vi.fn(),
-  mockSetApiKey: vi.fn(),
-}));
+const { mockRender, mockSetSdkKey, mockSetApiKey, mockSetLanguage } =
+  vi.hoisted(() => ({
+    mockRender: vi.fn(),
+    mockSetSdkKey: vi.fn(),
+    mockSetApiKey: vi.fn(),
+    mockSetLanguage: vi.fn(),
+  }));
 
 vi.stubGlobal("VERSION", "0.0.0-test");
 
@@ -14,6 +16,7 @@ vi.mock("../mosqlimate", () => {
       render: mockRender,
       setSdkKey: mockSetSdkKey,
       setApiKey: mockSetApiKey,
+      setLanguage: mockSetLanguage,
     },
   };
 });
@@ -184,6 +187,40 @@ describe("autoInit", () => {
     const result = await autoInit({ sdk_key: "test-key-123" });
 
     expect(mockSetSdkKey).toHaveBeenCalledWith("test-key-123");
+    expect(result.rendered).toBe(1);
+  });
+
+  it("passes language from data-language attr", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+      "data-language": "pt",
+    });
+    document.body.appendChild(el);
+
+    await autoInit();
+
+    expect(mockRender).toHaveBeenCalledWith(
+      expect.objectContaining({ language: "pt" }),
+    );
+  });
+
+  it("calls setLanguage when language option is passed", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit({ language: "pt" });
+
+    expect(mockSetLanguage).toHaveBeenCalledWith("pt");
     expect(result.rendered).toBe(1);
   });
 

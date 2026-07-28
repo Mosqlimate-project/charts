@@ -1,9 +1,14 @@
 import type { EChartsOption } from "echarts";
-import type { ChartData, Theme } from "../types";
+import type { ChartData, Language, Theme } from "../types";
 import { EChartsRenderer } from "./base";
+import { t } from "../i18n";
 
 export class RtChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{ data_iniSE: string; Rt: number | null }>;
     const c = this.axisColors(theme);
 
@@ -37,7 +42,7 @@ export class RtChart extends EChartsRenderer {
       },
       yAxis: {
         type: "value",
-        name: "Rt",
+        name: t("rt.rt", lang),
         min: 0,
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
@@ -56,7 +61,7 @@ export class RtChart extends EChartsRenderer {
       },
       series: [
         {
-          name: "Rt",
+          name: t("rt.rt", lang),
           type: "line",
           data: sorted.map((d) => d.Rt),
           smooth: true,
@@ -69,7 +74,11 @@ export class RtChart extends EChartsRenderer {
               type: "dashed",
               width: 1,
             },
-            label: { position: "end", formatter: "Threshold", color: c.text },
+            label: {
+              position: "end",
+              formatter: t("rt.threshold", lang),
+              color: c.text,
+            },
             data: [{ yAxis: 1.0 }],
           },
           areaStyle: {
