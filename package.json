@@ -45,5 +45,6 @@
     "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]
-  }
+  },
+  "version": "1.0.0"
 }
