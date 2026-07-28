@@ -24,7 +24,7 @@ jobs:
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           VERSION=${TAG#v}
-          npm version "$VERSION" --no-git-tag-version
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
       - name: Publish to npm
         run: npm publish --access public --provenance
         working-directory: packages/core

@@ -41,7 +41,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Mosqlimate-project/charts",
+    "url": "git+https://github.com/Mosqlimate-project/charts.git",
     "directory": "packages/core"
   }
 }

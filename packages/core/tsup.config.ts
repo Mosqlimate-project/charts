@@ -33,21 +33,46 @@ const watermarkBuffer = readFileSync(
 );
 const watermarkDataUri = `data:image/png;base64,${watermarkBuffer.toString("base64")}`;
 
-export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true,
-  clean: true,
-  sourcemap: true,
-  minify: false,
-  target: "es2020",
-  outDir: "dist",
-  define: {
-    VERSION: JSON.stringify(pkg.version),
-    WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),
-    "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
+export default defineConfig([
+  {
+    entry: ["src/index.ts"],
+    format: ["esm", "cjs"],
+    dts: true,
+    clean: true,
+    sourcemap: true,
+    minify: false,
+    target: "es2020",
+    outDir: "dist",
+    define: {
+      VERSION: JSON.stringify(pkg.version),
+      WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),
+      "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
+    },
+    banner: {
+      js: `/* @mosqlimate/charts v${pkg.version} */`,
+    },
   },
-  banner: {
-    js: `/* @mosqlimate/charts v${pkg.version} */`,
+  {
+    entry: ["src/index.ts"],
+    format: ["iife"],
+    dts: false,
+    clean: false,
+    sourcemap: true,
+    minify: true,
+    target: "es2020",
+    outDir: "dist",
+    globalName: "Mosqlimate",
+    external: ["echarts"],
+    footer: {
+      js: "\nif (typeof window !== 'undefined') window.Mosqlimate = Mosqlimate;",
+    },
+    define: {
+      VERSION: JSON.stringify(pkg.version),
+      WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),
+      "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
+    },
+    banner: {
+      js: `/* @mosqlimate/charts v${pkg.version} */`,
+    },
   },
-});
+]);
