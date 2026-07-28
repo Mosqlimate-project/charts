@@ -10,16 +10,21 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - run: npm run build --workspaces
       - name: Bump version from git tag
+        working-directory: packages/core
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           VERSION=${TAG#v}
-          npm version "$VERSION" --no-git-tag-version -w packages/core
+          npm version "$VERSION" --no-git-tag-version
       - name: Publish to npm
-        run: npm publish -w packages/core --access public --provenance
+        run: npm publish --access public --provenance
+        working-directory: packages/core
