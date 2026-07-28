@@ -1,4 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import type {
+  ChartData,
+  ChartName,
+  ChartCategory,
+  RenderOptions,
+} from "../types";
 import { PlaceholderRenderer } from "../renderer";
 import { RtChart } from "../charts/infodengue";
 import {
@@ -16,12 +22,12 @@ function makeContainer(): HTMLElement {
   return div;
 }
 
-function makeChartData(chart: string) {
+function makeChartData<T extends ChartName>(chart: T): ChartData<T> {
   return {
     chart,
-    category: chart.split("/")[0],
-    data: [],
-  } as const;
+    category: chart.split("/")[0] as ChartCategory,
+    data: [] as ChartData<T>["data"],
+  };
 }
 
 describe("PlaceholderRenderer", () => {
@@ -38,7 +44,11 @@ describe("PlaceholderRenderer", () => {
 
   it("renders canvas into container", async () => {
     const container = makeContainer();
-    await renderer.render(container, makeChartData("infodengue/rt"));
+    await renderer.render(
+      container,
+      makeChartData("infodengue/rt"),
+      {} as RenderOptions,
+    );
     const canvas = container.querySelector("canvas");
     expect(canvas).toBeTruthy();
     expect(canvas?.width).toBe(600);
@@ -48,7 +58,11 @@ describe("PlaceholderRenderer", () => {
   it("falls back to default dimensions when container has no size", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
-    await renderer.render(container, makeChartData("infodengue/rt"));
+    await renderer.render(
+      container,
+      makeChartData("infodengue/rt"),
+      {} as RenderOptions,
+    );
     const canvas = container.querySelector("canvas");
     expect(canvas?.width).toBe(600);
     expect(canvas?.height).toBe(400);
@@ -68,7 +82,11 @@ describe("PlaceholderRenderer", () => {
 
   it("destroy removes canvas and clears container", async () => {
     const container = makeContainer();
-    await renderer.render(container, makeChartData("infodengue/rt"));
+    await renderer.render(
+      container,
+      makeChartData("infodengue/rt"),
+      {} as RenderOptions,
+    );
     expect(container.querySelector("canvas")).toBeTruthy();
     renderer.destroy();
     expect(container.querySelector("canvas")).toBeNull();
@@ -78,7 +96,7 @@ describe("PlaceholderRenderer", () => {
 describe("RtChart", () => {
   it("builds correct option structure", () => {
     const chart = new RtChart();
-    const data = {
+    const data: ChartData<"infodengue/rt"> = {
       chart: "infodengue/rt",
       category: "infodengue",
       data: [
@@ -95,7 +113,7 @@ describe("RtChart", () => {
 
   it("builds dark theme option", () => {
     const chart = new RtChart();
-    const data = {
+    const data: ChartData<"infodengue/rt"> = {
       chart: "infodengue/rt",
       category: "infodengue",
       data: [{ data_iniSE: "2024-01-07", Rt: 1.2 }],
@@ -106,14 +124,23 @@ describe("RtChart", () => {
 
   it("uses Portuguese translations when lang is pt", () => {
     const chart = new TemperatureChart();
-    const data = {
+    const data: ChartData<"climate/temperature"> = {
       chart: "climate/temperature",
       category: "climate",
-      data: [{ date: "2024-01-01", temp_min: 18, temp_med: 24, temp_max: 30 }],
+      data: [
+        {
+          date: "2024-01-01",
+          epiweek: 1,
+          temp_min: 18,
+          temp_med: 24,
+          temp_max: 30,
+        },
+      ],
     };
     const opt = chart.buildOption(data, "light", "pt");
-    expect(opt.legend?.data).toContain("Temp Máx");
-    expect(opt.legend?.data).toContain("Temp Mín");
+    const legend = opt.legend as { data: string[] } | undefined;
+    expect(legend?.data).toContain("Temp Máx");
+    expect(legend?.data).toContain("Temp Mín");
   });
 });
 
@@ -134,25 +161,36 @@ describe("i18n t()", () => {
 describe("TemperatureChart", () => {
   it("builds correct option structure", () => {
     const chart = new TemperatureChart();
-    const data = {
+    const data: ChartData<"climate/temperature"> = {
       chart: "climate/temperature",
       category: "climate",
-      data: [{ date: "2024-01-01", temp_min: 18, temp_med: 24, temp_max: 30 }],
+      data: [
+        {
+          date: "2024-01-01",
+          epiweek: 1,
+          temp_min: 18,
+          temp_med: 24,
+          temp_max: 30,
+        },
+      ],
     };
     const opt = chart.buildOption(data, "light");
     expect(opt.xAxis).toBeDefined();
     expect(opt.yAxis).toBeDefined();
-    expect(opt.series).toHaveLength(3);
+    expect(opt.series).toBeDefined();
+    expect((opt.series as unknown[]).length).toBe(3);
   });
 });
 
 describe("AccumulatedWaterfallChart", () => {
   it("builds correct option structure", () => {
     const chart = new AccumulatedWaterfallChart();
-    const data = {
+    const data: ChartData<"climate/accumulated-waterfall"> = {
       chart: "climate/accumulated-waterfall",
       category: "climate",
-      data: [{ date: "2024-01-01", epiweek: 1, accumulated: 15.5 }],
+      data: [
+        { date: "2024-01-01", epiweek: 1, precip_tot: 15.5, precip_med: 5.2 },
+      ],
     };
     const opt = chart.buildOption(data, "light");
     expect(opt.xAxis).toBeDefined();
@@ -164,26 +202,29 @@ describe("AccumulatedWaterfallChart", () => {
 describe("AirChart", () => {
   it("builds correct option structure with dual y-axes", () => {
     const chart = new AirChart();
-    const data = {
+    const data: ChartData<"climate/umid-pressao-med"> = {
       chart: "climate/umid-pressao-med",
       category: "climate",
-      data: [{ date: "2024-01-01", umid_med: 65, pressao_med: 0.95 }],
+      data: [
+        { date: "2024-01-01", epiweek: 1, umid_med: 65, pressao_med: 0.95 },
+      ],
     };
     const opt = chart.buildOption(data, "light");
     expect(opt.yAxis).toHaveLength(2);
-    expect(opt.series).toHaveLength(2);
-    expect(opt.series[0].yAxisIndex).toBe(0);
-    expect(opt.series[1].yAxisIndex).toBe(1);
+    const series = opt.series as unknown[];
+    expect(series).toHaveLength(2);
+    expect((series[0] as { yAxisIndex: number }).yAxisIndex).toBe(0);
+    expect((series[1] as { yAxisIndex: number }).yAxisIndex).toBe(1);
   });
 });
 
 describe("EggsDensityChart", () => {
   it("builds correct option structure", () => {
     const chart = new EggsDensityChart();
-    const data = {
+    const data: ChartData<"contaovos/eggs_density"> = {
       chart: "contaovos/eggs_density",
       category: "contaovos",
-      data: [{ date: "2024-01-01", eggs_density: 45.2 }],
+      data: [{ epiweek: "202401", total_eggs: 45 }],
     };
     const opt = chart.buildOption(data, "light");
     expect(opt.xAxis).toBeDefined();
@@ -194,10 +235,10 @@ describe("EggsDensityChart", () => {
 describe("PositivityChart", () => {
   it("builds correct option structure", () => {
     const chart = new PositivityChart();
-    const data = {
+    const data: ChartData<"contaovos/positivity"> = {
       chart: "contaovos/positivity",
       category: "contaovos",
-      data: [{ date: "2024-01-01", positivity: 12.5 }],
+      data: [{ name: "SP", positivity: 12.5 }],
     };
     const opt = chart.buildOption(data, "light");
     expect(opt.xAxis).toBeDefined();

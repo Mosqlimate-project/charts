@@ -4,11 +4,7 @@ import { EChartsRenderer } from "./base";
 import { t } from "../i18n";
 
 export class EggsDensityChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       epiweek: string;
       total_eggs: number;
@@ -68,11 +64,7 @@ export class EggsDensityChart extends EChartsRenderer {
 }
 
 export class PositivityChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       name: string;
       positivity: number;
@@ -136,11 +128,7 @@ export class MapChart extends EChartsRenderer {
     this.scatterData = data;
   }
 
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    _lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, _lang?: Language): EChartsOption {
     const states = data.data as Array<{
       name: string;
       total_eggs: number;
@@ -223,11 +211,7 @@ export class MapChart extends EChartsRenderer {
 }
 
 export class ScatterChart extends EChartsRenderer {
-  protected buildOption(
-    data: ChartData,
-    theme: Theme,
-    lang?: Language,
-  ): EChartsOption {
+  buildOption(data: ChartData, theme: Theme, lang?: Language): EChartsOption {
     const rows = data.data as Array<{
       name: string;
       latitude: number;
