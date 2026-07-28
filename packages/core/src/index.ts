@@ -13,7 +13,6 @@ export {
 export {
   EChartsRenderer,
   RtChart,
-  TotalCasesChart,
   TemperatureChart,
   AccumulatedWaterfallChart,
   AirChart,
@@ -48,7 +47,6 @@ export type {
   ContaOvosMapParams,
   ChartParams,
   InfodengueRtRow,
-  InfodengueTotalCases,
   ClimateTemperatureRow,
   ClimateWaterfallRow,
   ClimateHumidityPressureRow,

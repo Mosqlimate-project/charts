@@ -1,9 +1,8 @@
-import type { ChartName, RenderOptions, Theme } from "./types";
+import type { ChartName, Language, RenderOptions, Theme } from "./types";
 import { Mosqlimate } from "./mosqlimate";
 
 const VALID_CHARTS: readonly string[] = [
   "infodengue/rt",
-  "infodengue/total-cases",
   "climate/temperature",
   "climate/accumulated-waterfall",
   "climate/umid-pressao-med",
@@ -59,15 +58,15 @@ function parseContainerStyle(dataset: DOMStringMap): ContainerStyle {
 
 function applyContainerStyle(el: HTMLElement, style: ContainerStyle): void {
   for (const [prop, val] of Object.entries(style)) {
-    if (val !== undefined) {
-      (el.style as unknown as Record<string, string>)[prop] = val;
-    }
+    (el.style as unknown as Record<string, string>)[prop] = val;
   }
 }
 
 export interface AutoInitOptions {
   root?: ParentNode;
   sdk_key?: string;
+  api_key?: string;
+  language?: Language;
 }
 
 export interface AutoInitResult {
@@ -83,6 +82,12 @@ export async function autoInit(
 
   if (options?.sdk_key) {
     Mosqlimate.setSdkKey(options.sdk_key);
+  }
+  if (options?.api_key) {
+    Mosqlimate.setApiKey(options.api_key);
+  }
+  if (options?.language) {
+    Mosqlimate.setLanguage(options.language);
   }
 
   const result: AutoInitResult = { rendered: 0, errors: [] };
@@ -105,6 +110,7 @@ export async function autoInit(
     const height = parseNumber(ds.height);
     const geocode = parseNumber(ds.geocode);
     const theme = ds.theme as Theme | undefined;
+    const language = (ds.language as Language | undefined) ?? options?.language;
 
     if (theme && !VALID_THEMES.includes(theme)) {
       result.errors.push({
@@ -129,9 +135,9 @@ export async function autoInit(
       chart: chart as ChartName,
       params: params as unknown as RenderOptions["params"],
       ...(theme && { theme }),
+      ...(language && { language }),
       ...(width !== undefined && { width }),
       ...(height !== undefined && { height }),
-      ...(ds.apiBase !== undefined && { api_base: ds.apiBase }),
     };
 
     tasks.push(

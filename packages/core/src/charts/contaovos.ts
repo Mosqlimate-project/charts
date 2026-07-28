@@ -1,9 +1,14 @@
 import type { EChartsOption } from "echarts";
-import type { ChartData, Theme } from "../types";
+import type { ChartData, Language, Theme } from "../types";
 import { EChartsRenderer } from "./base";
+import { t } from "../i18n";
 
 export class EggsDensityChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       epiweek: string;
       total_eggs: number;
@@ -21,7 +26,7 @@ export class EggsDensityChart extends EChartsRenderer {
       xAxis: {
         type: "category",
         data: rows.map((d) => d.epiweek),
-        name: "Epiweek",
+        name: t("common.epiweek", lang),
         nameLocation: "middle",
         nameGap: 30,
         nameTextStyle: { color: c.text },
@@ -30,7 +35,7 @@ export class EggsDensityChart extends EChartsRenderer {
       },
       yAxis: {
         type: "value",
-        name: "Total Eggs",
+        name: t("common.total_eggs", lang),
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
         splitLine: { lineStyle: { color: c.line } },
@@ -63,7 +68,11 @@ export class EggsDensityChart extends EChartsRenderer {
 }
 
 export class PositivityChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       name: string;
       positivity: number;
@@ -81,7 +90,7 @@ export class PositivityChart extends EChartsRenderer {
       xAxis: {
         type: "category",
         data: rows.map((d) => d.name),
-        name: "Location",
+        name: t("common.location", lang),
         nameLocation: "middle",
         nameGap: 60,
         nameTextStyle: { color: c.text },
@@ -90,7 +99,7 @@ export class PositivityChart extends EChartsRenderer {
       },
       yAxis: {
         type: "value",
-        name: "Positivity (%)",
+        name: t("common.positivity", lang),
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
         splitLine: { lineStyle: { color: c.line } },
@@ -127,7 +136,11 @@ export class MapChart extends EChartsRenderer {
     this.scatterData = data;
   }
 
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    _lang?: Language,
+  ): EChartsOption {
     const states = data.data as Array<{
       name: string;
       total_eggs: number;
@@ -210,7 +223,11 @@ export class MapChart extends EChartsRenderer {
 }
 
 export class ScatterChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       name: string;
       latitude: number;
@@ -228,14 +245,14 @@ export class ScatterChart extends EChartsRenderer {
       },
       xAxis: {
         type: "value",
-        name: "Longitude",
+        name: t("common.longitude", lang),
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
         splitLine: { lineStyle: { color: c.line } },
       },
       yAxis: {
         type: "value",
-        name: "Latitude",
+        name: t("common.latitude", lang),
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
         splitLine: { lineStyle: { color: c.line } },

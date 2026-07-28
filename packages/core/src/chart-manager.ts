@@ -3,16 +3,18 @@ import type {
   ChartInstance,
   ChartName,
   ChartRenderer,
+  Language,
   MosqlimateConfig,
   RenderOptions,
   StatusChangeCallback,
+  Theme,
 } from "./types";
+import { t } from "./i18n";
 import { ApiClient } from "./api-client";
 import { PlaceholderRenderer } from "./renderer";
-import { createWatermarkElement, removeWatermarkElement } from "./watermark";
+import { applyWatermark, removeWatermark } from "./watermark";
 import {
   RtChart,
-  TotalCasesChart,
   TemperatureChart,
   AccumulatedWaterfallChart,
   AirChart,
@@ -34,13 +36,26 @@ export class ChartManager {
   private config: MosqlimateConfig;
   private statusListeners: StatusChangeCallback[] = [];
 
-  constructor(config: MosqlimateConfig, sdk_key?: string) {
+  constructor(
+    config: MosqlimateConfig,
+    api_base: string,
+    sdk_key?: string,
+    api_key?: string,
+  ) {
     this.config = config;
-    this.api = new ApiClient(config.api_base, sdk_key);
+    this.api = new ApiClient(api_base, sdk_key, api_key);
   }
 
   setSdkKey(key: string): void {
     this.api.setSdkKey(key);
+  }
+
+  setApiKey(key: string): void {
+    this.api.setApiKey(key);
+  }
+
+  setLanguage(lang: Language): void {
+    this.config.language = lang;
   }
 
   async render<T extends ChartName>(
@@ -63,6 +78,8 @@ export class ChartManager {
     this.instances.set(id, instance);
     this.emitStatus(instance);
 
+    const lang = options.language ?? this.config.language ?? "en";
+
     try {
       const data = await this.api.fetchChart(options);
       instance.data = data;
@@ -70,15 +87,16 @@ export class ChartManager {
       await renderer.render(container, data, {
         ...options,
         theme: options.theme ?? this.config.theme,
+        language: lang,
       });
 
-      this.applyWatermark(container);
+      this.applyWatermark(container, options.theme ?? this.config.theme);
 
       instance.status = "ready";
     } catch (err) {
       instance.status = "error";
       instance.error = err instanceof Error ? err : new Error(String(err));
-      this.renderError(container, instance.error);
+      this.renderError(container, instance.error, lang);
     }
 
     this.emitStatus(instance);
@@ -101,7 +119,7 @@ export class ChartManager {
   destroy(id: string): void {
     const instance = this.instances.get(id);
     if (!instance) return;
-    removeWatermarkElement(instance.container);
+    removeWatermark(instance.container);
     instance.renderer.destroy();
     this.instances.delete(id);
   }
@@ -139,7 +157,6 @@ export class ChartManager {
   private createRenderer(chart: ChartName): ChartRenderer {
     const renderers: Record<ChartName, () => ChartRenderer> = {
       "infodengue/rt": () => new RtChart(),
-      "infodengue/total-cases": () => new TotalCasesChart(),
       "climate/temperature": () => new TemperatureChart(),
       "climate/accumulated-waterfall": () => new AccumulatedWaterfallChart(),
       "climate/umid-pressao-med": () => new AirChart(),
@@ -151,21 +168,29 @@ export class ChartManager {
     return (renderers[chart] ?? (() => new PlaceholderRenderer()))();
   }
 
-  private renderError(container: HTMLElement, error: Error): void {
+  private renderError(
+    container: HTMLElement,
+    error: Error,
+    lang?: Language,
+  ): void {
     container.innerHTML = "";
     const el = document.createElement("div");
     el.setAttribute("role", "alert");
     el.style.cssText =
       "padding:16px;color:#dc3545;background:#f8d7da;border:1px solid #f5c2c7;border-radius:8px;font-family:system-ui,sans-serif;font-size:14px;";
-    el.textContent = `Error loading chart: ${error.message}`;
+    el.textContent = `${t("error.loading", lang)}: ${error.message}`;
     container.appendChild(el);
   }
 
-  private applyWatermark(container: HTMLElement): void {
+  private getThemeBg(theme: Theme): string {
+    return theme === "dark" ? "#1a1a2e" : "#ffffff";
+  }
+
+  private applyWatermark(container: HTMLElement, theme: Theme): void {
     if (getComputedStyle(container).position === "static") {
       container.style.position = "relative";
     }
-    container.appendChild(createWatermarkElement());
+    applyWatermark(container, this.getThemeBg(theme));
   }
 
   private emitStatus(instance: ChartInstance): void {

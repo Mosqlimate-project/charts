@@ -23,7 +23,11 @@ vi.mock("../mosqlimate", () => {
   };
 });
 
-import { MosqlimateChart, registerChartElement } from "../web-component";
+import {
+  MosqlimateChart,
+  registerChartElement,
+  isChartElementRegistered,
+} from "../web-component";
 
 function makeChartElement(attrs: Record<string, string> = {}): MosqlimateChart {
   const el = document.createElement("mosqlimate-chart") as MosqlimateChart;
@@ -53,6 +57,10 @@ describe("MosqlimateChart", () => {
 
     it("does not throw if registered twice", () => {
       expect(() => registerChartElement()).not.toThrow();
+    });
+
+    it("isChartElementRegistered returns true after registration", () => {
+      expect(isChartElementRegistered()).toBe(true);
     });
   });
 
@@ -96,6 +104,41 @@ describe("MosqlimateChart", () => {
       expect(mockRender).not.toHaveBeenCalled();
     });
 
+    it("renders chart without start and end attributes", async () => {
+      const el = makeChartElement({
+        chart: "infodengue/rt",
+        disease: "dengue",
+        geocode: "3550308",
+      });
+      document.body.appendChild(el);
+
+      await vi.waitFor(() => {
+        expect(mockRender).toHaveBeenCalledOnce();
+      });
+
+      expect(mockRender).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { disease: "dengue", geocode: 3550308 },
+        }),
+      );
+    });
+
+    it("skips render when element is disconnected before microtask", async () => {
+      const el = makeChartElement({
+        chart: "infodengue/rt",
+        disease: "dengue",
+        geocode: "3550308",
+        start: "2024-01-01",
+        end: "2024-01-31",
+      });
+      document.body.appendChild(el);
+      document.body.removeChild(el);
+
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(mockRender).not.toHaveBeenCalled();
+    });
+
     it("passes theme attribute", async () => {
       const el = makeChartElement({
         chart: "temperature",
@@ -134,14 +177,13 @@ describe("MosqlimateChart", () => {
       );
     });
 
-    it("passes api-base attribute", async () => {
+    it("passes width and height attrs with non-numeric values defaults to undefined", async () => {
       const el = makeChartElement({
-        chart: "infodengue/rt",
-        disease: "dengue",
-        geocode: "3550308",
+        chart: "eggs-density",
         start: "2024-01-01",
-        end: "2024-01-31",
-        "api-base": "https://custom.api",
+        end: "2024-06-30",
+        width: "invalid",
+        height: "NaN",
       });
       document.body.appendChild(el);
 
@@ -150,7 +192,27 @@ describe("MosqlimateChart", () => {
       });
 
       expect(mockRender).toHaveBeenCalledWith(
-        expect.objectContaining({ api_base: "https://custom.api" }),
+        expect.not.objectContaining({ width: expect.any(Number) }),
+      );
+    });
+
+    it("passes language attribute", async () => {
+      const el = makeChartElement({
+        chart: "infodengue/rt",
+        disease: "dengue",
+        geocode: "3550308",
+        start: "2024-01-01",
+        end: "2024-01-31",
+        language: "pt",
+      });
+      document.body.appendChild(el);
+
+      await vi.waitFor(() => {
+        expect(mockRender).toHaveBeenCalledOnce();
+      });
+
+      expect(mockRender).toHaveBeenCalledWith(
+        expect.objectContaining({ language: "pt" }),
       );
     });
 
@@ -247,7 +309,7 @@ describe("MosqlimateChart", () => {
         expect(mockRender).toHaveBeenCalledOnce();
       });
 
-      el.setAttribute("chart", "rt");
+      el.setAttribute("chart", "infodengue/rt");
 
       await new Promise((r) => setTimeout(r, 50));
 

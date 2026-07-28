@@ -1,5 +1,5 @@
 {
-  "name": "mosqlimate-charts",
+  "name": "@mosqlimate/charts",
   "private": true,
   "type": "module",
   "workspaces": [

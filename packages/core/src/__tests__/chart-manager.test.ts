@@ -3,6 +3,7 @@ import { ChartManager } from "../chart-manager";
 
 const mockFetchChart = vi.fn();
 const mockSetSdkKey = vi.fn();
+const mockSetApiKey = vi.fn();
 
 vi.mock("../api-client", () => {
   return {
@@ -10,6 +11,7 @@ vi.mock("../api-client", () => {
       return {
         fetchChart: mockFetchChart,
         setSdkKey: mockSetSdkKey,
+        setApiKey: mockSetApiKey,
       };
     }),
   };
@@ -24,7 +26,6 @@ vi.mock("../charts", () => {
   }
   return {
     RtChart: MockRenderer,
-    TotalCasesChart: MockRenderer,
     TemperatureChart: MockRenderer,
     AccumulatedWaterfallChart: MockRenderer,
     AirChart: MockRenderer,
@@ -63,10 +64,7 @@ describe("ChartManager", () => {
   describe("render", () => {
     it("creates instance with loading status then transitions to ready", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -89,10 +87,7 @@ describe("ChartManager", () => {
 
     it("sets error status on fetch failure", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("API error 401"));
 
@@ -107,11 +102,44 @@ describe("ChartManager", () => {
       expect(container.querySelector("[role=alert]")).toBeTruthy();
     });
 
-    it("throws when container selector not found", async () => {
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
+    it("wraps non-Error rejection in Error object", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockRejectedValue("raw string error");
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
       });
+
+      expect(instance.status).toBe("error");
+      expect(instance.error?.message).toBe("raw string error");
+    });
+
+    it("falls back to PlaceholderRenderer for unknown chart name", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "unknown/chart" as never,
+        params: { start: "2024-01-01", end: "2024-01-31" },
+      });
+
+      expect(instance.status).toBe("ready");
+    });
+
+    it("throws when container selector not found", async () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       await expect(
         manager.render({
@@ -129,10 +157,7 @@ describe("ChartManager", () => {
 
     it("accepts HTMLElement directly as target", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -149,15 +174,36 @@ describe("ChartManager", () => {
 
       expect(instance.container).toBe(container);
     });
+
+    it("renders all chart types successfully", async () => {
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      const charts = [
+        "climate/accumulated-waterfall",
+        "climate/umid-pressao-med",
+        "contaovos/eggs_density",
+        "contaovos/positivity",
+        "contaovos/map",
+        "contaovos/map/scatter",
+      ] as const;
+
+      for (const chart of charts) {
+        const container = createContainer();
+        const instance = await manager.render({
+          target: container,
+          chart,
+          params: { start: "2024-01-01", end: "2024-12-31" },
+        });
+        expect(instance.status).toBe("ready");
+      }
+    });
   });
 
   describe("lifecycle", () => {
     it("getInstance returns existing instance", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -177,10 +223,7 @@ describe("ChartManager", () => {
 
     it("destroy removes instance", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -199,12 +242,14 @@ describe("ChartManager", () => {
       expect(manager.getInstance(instance.id)).toBeUndefined();
     });
 
+    it("destroy does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      expect(() => manager.destroy("nonexistent")).not.toThrow();
+    });
+
     it("destroyAll removes all instances", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -222,15 +267,91 @@ describe("ChartManager", () => {
       manager.destroyAll();
       expect(manager.getInstance("mc-0")).toBeUndefined();
     });
+
+    it("update calls renderer.update on existing instance", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      const newData = {
+        chart: "infodengue/rt" as const,
+        category: "infodengue" as const,
+        data: [{ data_iniSE: "2024-02-01", Rt: 0.8 }],
+      };
+      manager.update(instance.id, newData);
+      expect(instance.data).toEqual(newData);
+    });
+
+    it("update does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      manager.update("nonexistent", {} as never);
+    });
+
+    it("resize does nothing for unknown id", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+      manager.resize("nonexistent", 800, 600);
+    });
+
+    it("resize calls renderer.resize on existing instance", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      const renderer = instance.renderer;
+      manager.resize(instance.id, 800, 600);
+      expect(renderer.resize).toHaveBeenCalledWith(800, 600);
+    });
+
+    it("accepts string CSS selector as target", async () => {
+      const container = createContainer();
+      container.id = "test-chart";
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: "#test-chart",
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(instance.container).toBe(container);
+    });
   });
 
   describe("status events", () => {
     it("emits loading and ready status", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -258,10 +379,7 @@ describe("ChartManager", () => {
 
     it("emits loading and error status on failure", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("fail"));
 
@@ -285,10 +403,7 @@ describe("ChartManager", () => {
 
     it("unsubscribe stops events", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -327,23 +442,34 @@ describe("ChartManager", () => {
 
   describe("setSdkKey", () => {
     it("delegates to api client", () => {
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       manager.setSdkKey("key-123");
       expect(mockSetSdkKey).toHaveBeenCalledWith("key-123");
     });
   });
 
+  describe("setApiKey", () => {
+    it("delegates to api client", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      manager.setApiKey("api-key-456");
+      expect(mockSetApiKey).toHaveBeenCalledWith("api-key-456");
+    });
+  });
+
+  describe("setLanguage", () => {
+    it("updates config language", () => {
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      manager.setLanguage("pt");
+    });
+  });
+
   describe("watermark", () => {
-    it("appends watermark element after successful render", async () => {
+    it("applies watermark as container background after successful render", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -358,22 +484,17 @@ describe("ChartManager", () => {
         },
       });
 
-      const wm = container.querySelector(".mosqlimate-watermark");
-      expect(wm).toBeTruthy();
-      expect(wm?.getAttribute("aria-hidden")).toBe("true");
-      const style = wm?.getAttribute("style") ?? "";
-      expect(style).toContain("position:");
-      expect(style).toContain("absolute");
-      expect(style).toContain("opacity:");
-      expect(style).toContain("0.3");
+      expect(container.style.backgroundImage).toContain("url(");
+      expect(container.style.backgroundPosition).toMatch(
+        /(top 30px right 30px|right 30px top 30px)/,
+      );
+      expect(container.style.backgroundRepeat).toBe("no-repeat");
+      expect(container.style.backgroundSize).toBe("100px 100px");
     });
 
-    it("does not append watermark on render error", async () => {
+    it("does not apply watermark on render error", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockRejectedValue(new Error("fail"));
 
@@ -383,15 +504,12 @@ describe("ChartManager", () => {
         params: { geocode: 3550308, start: "2024-01-01", end: "2024-01-31" },
       });
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeNull();
+      expect(container.style.backgroundImage).toBe("");
     });
 
     it("removes watermark on destroy", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -406,19 +524,16 @@ describe("ChartManager", () => {
         },
       });
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeTruthy();
+      expect(container.style.backgroundImage).toContain("url(");
 
       manager.destroy(instance.id);
 
-      expect(container.querySelector(".mosqlimate-watermark")).toBeNull();
+      expect(container.style.backgroundImage).toBe("");
     });
 
     it("sets container position to relative if static", async () => {
       const container = createContainer();
-      const manager = new ChartManager({
-        api_base: "https://test.api",
-        theme: "light",
-      });
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
       mockFetchChart.mockResolvedValue(makeRtResponse());
 
@@ -434,6 +549,49 @@ describe("ChartManager", () => {
       });
 
       expect(container.style.position).toBe("relative");
+    });
+
+    it("uses dark theme background color", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "dark" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(container.style.backgroundColor).toBe("rgb(26, 26, 46)");
+    });
+
+    it("does not override existing container background", async () => {
+      const container = createContainer();
+      container.style.backgroundColor = "#f0f0f0";
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "infodengue/rt",
+        params: {
+          disease: "dengue",
+          geocode: 3550308,
+          start: "2024-01-01",
+          end: "2024-01-31",
+        },
+      });
+
+      expect(container.style.backgroundColor).toBe("rgb(240, 240, 240)");
+
+      manager.destroy(instance.id);
     });
   });
 });

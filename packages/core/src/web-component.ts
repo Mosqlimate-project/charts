@@ -1,4 +1,4 @@
-import type { ChartName, Theme } from "./types";
+import type { ChartName, Language, Theme } from "./types";
 import { Mosqlimate } from "./mosqlimate";
 
 const ATTR_LIST = [
@@ -11,7 +11,7 @@ const ATTR_LIST = [
   "theme",
   "width",
   "height",
-  "api-base",
+  "language",
 ] as const;
 
 function parseNumber(value: string | null): number | undefined {
@@ -39,7 +39,9 @@ export class MosqlimateChart extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this._render();
+    Promise.resolve().then(() => {
+      if (this.isConnected) this._render();
+    });
   }
 
   disconnectedCallback(): void {
@@ -84,9 +86,9 @@ export class MosqlimateChart extends HTMLElement {
     const end = this.getAttribute("end");
     const uf = this.getAttribute("uf");
     const theme = this.getAttribute("theme") as Theme | null;
+    const language = this.getAttribute("language") as Language | null;
     const width = parseNumber(this.getAttribute("width"));
     const height = parseNumber(this.getAttribute("height"));
-    const apiBase = this.getAttribute("api-base");
 
     const params: Record<string, string | number> = {};
     if (disease) params.disease = disease;
@@ -100,9 +102,9 @@ export class MosqlimateChart extends HTMLElement {
       chart,
       params: params as never,
       ...(theme ? { theme } : {}),
+      ...(language ? { language } : {}),
       ...(width !== undefined ? { width } : {}),
       ...(height !== undefined ? { height } : {}),
-      ...(apiBase ? { api_base: apiBase } : {}),
     }).then((instance) => {
       this._chartId = instance.id;
     });

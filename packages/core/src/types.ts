@@ -31,7 +31,7 @@ export type UF =
 
 export type ChartCategory = "infodengue" | "climate" | "contaovos";
 
-export type InfodengueChart = "infodengue/rt" | "infodengue/total-cases";
+export type InfodengueChart = "infodengue/rt";
 
 export type ClimateChart =
   | "climate/temperature"
@@ -47,6 +47,7 @@ export type ContaOvosChart =
 export type ChartName = InfodengueChart | ClimateChart | ContaOvosChart;
 
 export type Theme = "light" | "dark" | "minimal" | "publication" | "dashboard";
+export type Language = "en" | "pt";
 
 // --- Input params ---
 
@@ -93,10 +94,6 @@ export type ChartParams =
 export interface InfodengueRtRow {
   data_iniSE: string;
   Rt: number | null;
-}
-
-export interface InfodengueTotalCases {
-  total_cases: number;
 }
 
 export interface ClimateTemperatureRow {
@@ -150,7 +147,6 @@ export interface ContaOvosMapScatterRow {
 
 export type ChartDataMap = {
   "infodengue/rt": InfodengueRtRow[];
-  "infodengue/total-cases": InfodengueTotalCases;
   "climate/temperature": ClimateTemperatureRow[];
   "climate/accumulated-waterfall": ClimateWaterfallRow[];
   "climate/umid-pressao-med": ClimateHumidityPressureRow[];
@@ -173,9 +169,9 @@ export interface RenderOptions<T extends ChartName = ChartName> {
   chart: T;
   params: ChartParams;
   theme?: Theme;
+  language?: Language;
   width?: number;
   height?: number;
-  api_base?: string;
 }
 
 // --- Renderer contract ---
@@ -206,8 +202,8 @@ export interface ChartInstance {
 // --- Config ---
 
 export interface MosqlimateConfig {
-  api_base: string;
   theme: Theme;
+  language?: Language;
 }
 
 export type StatusChangeCallback = (event: StatusChangeEvent) => void;

@@ -1,9 +1,14 @@
 import type { EChartsOption } from "echarts";
-import type { ChartData, Theme } from "../types";
+import type { ChartData, Language, Theme } from "../types";
 import { EChartsRenderer } from "./base";
+import { t } from "../i18n";
 
 export class TemperatureChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       temp_min: number;
@@ -20,7 +25,11 @@ export class TemperatureChart extends EChartsRenderer {
         textStyle: { color: c.tooltipText },
       },
       legend: {
-        data: ["Max Temp", "Avg Temp", "Min Temp"],
+        data: [
+          t("temperature.max", lang),
+          t("temperature.avg", lang),
+          t("temperature.min", lang),
+        ],
         top: 35,
         textStyle: { color: c.titleText },
       },
@@ -34,7 +43,7 @@ export class TemperatureChart extends EChartsRenderer {
       xAxis: {
         type: "category",
         data: rows.map((d) => d.date.split(" ")[0]),
-        name: "Date",
+        name: t("common.date", lang),
         nameLocation: "middle",
         nameGap: 35,
         nameTextStyle: { fontSize: 12, fontWeight: "bold", color: c.text },
@@ -43,14 +52,14 @@ export class TemperatureChart extends EChartsRenderer {
       },
       yAxis: {
         type: "value",
-        name: "Temperature (°C)",
+        name: t("common.temperature", lang),
         nameTextStyle: { color: c.text },
         axisLabel: { color: c.text },
         splitLine: { lineStyle: { color: c.line } },
       },
       series: [
         {
-          name: "Max Temp",
+          name: t("temperature.max", lang),
           type: "line",
           data: rows.map((d) => d.temp_max),
           lineStyle: { color: "#6A75B7" },
@@ -58,7 +67,7 @@ export class TemperatureChart extends EChartsRenderer {
           showSymbol: false,
         },
         {
-          name: "Avg Temp",
+          name: t("temperature.avg", lang),
           type: "line",
           data: rows.map((d) => d.temp_med),
           lineStyle: { color: "#90BE10" },
@@ -66,7 +75,7 @@ export class TemperatureChart extends EChartsRenderer {
           showSymbol: false,
         },
         {
-          name: "Min Temp",
+          name: t("temperature.min", lang),
           type: "line",
           data: rows.map((d) => d.temp_min),
           lineStyle: { color: "#41BAC5" },
@@ -94,7 +103,11 @@ export class TemperatureChart extends EChartsRenderer {
 }
 
 export class AccumulatedWaterfallChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       precip_tot: number;
@@ -110,7 +123,10 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
         textStyle: { color: c.tooltipText },
       },
       legend: {
-        data: ["Precip Total", "Precip Avg"],
+        data: [
+          t("accumulated.precip_total", lang),
+          t("accumulated.precip_avg", lang),
+        ],
         top: 40,
         textStyle: { color: c.titleText },
       },
@@ -124,7 +140,7 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
       xAxis: {
         type: "category",
         data: rows.map((d) => d.date.split(" ")[0]),
-        name: "Date",
+        name: t("common.date", lang),
         nameLocation: "middle",
         nameGap: 35,
         nameTextStyle: { fontSize: 12, fontWeight: "bold", color: c.text },
@@ -133,7 +149,7 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
       },
       yAxis: {
         type: "value",
-        name: "Precipitation (mm)",
+        name: t("common.precipitation", lang),
         nameLocation: "middle",
         nameGap: 40,
         nameTextStyle: { fontSize: 12, fontWeight: "bold", color: c.text },
@@ -143,7 +159,7 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
       },
       series: [
         {
-          name: "Precip Avg",
+          name: t("accumulated.precip_avg", lang),
           type: "bar",
           data: rows.map((d) => d.precip_med),
           barWidth: "100%",
@@ -151,7 +167,7 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
           itemStyle: { color: "#2FDDEC" },
         },
         {
-          name: "Precip Total",
+          name: t("accumulated.precip_total", lang),
           type: "bar",
           data: rows.map((d) => d.precip_tot),
           barWidth: "100%",
@@ -179,7 +195,11 @@ export class AccumulatedWaterfallChart extends EChartsRenderer {
 }
 
 export class AirChart extends EChartsRenderer {
-  protected buildOption(data: ChartData, theme: Theme): EChartsOption {
+  protected buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption {
     const rows = data.data as Array<{
       date: string;
       umid_med: number;
@@ -195,7 +215,7 @@ export class AirChart extends EChartsRenderer {
         textStyle: { color: c.tooltipText },
       },
       legend: {
-        data: ["Humidity", "Pressure"],
+        data: [t("air.humidity", lang), t("air.pressure", lang)],
         top: 35,
         textStyle: { color: c.titleText },
       },
@@ -209,7 +229,7 @@ export class AirChart extends EChartsRenderer {
       xAxis: {
         type: "category",
         data: rows.map((d) => d.date.split(" ")[0]),
-        name: "Date",
+        name: t("common.date", lang),
         nameLocation: "middle",
         nameGap: 35,
         nameTextStyle: { fontSize: 12, fontWeight: "bold", color: c.text },
@@ -219,15 +239,17 @@ export class AirChart extends EChartsRenderer {
       yAxis: [
         {
           type: "value",
-          name: "Pressure (hPa)",
+          name: t("air.pressure_axis", lang),
           position: "left",
+          min: "dataMin",
+          max: (value: { max: number }) => value.max + 0.02,
           nameTextStyle: { color: c.text },
           axisLabel: { color: c.text },
           splitLine: { lineStyle: { color: c.line } },
         },
         {
           type: "value",
-          name: "Humidity (%)",
+          name: t("air.humidity_axis", lang),
           position: "right",
           nameTextStyle: { color: c.text },
           axisLabel: { color: c.text },
@@ -236,14 +258,14 @@ export class AirChart extends EChartsRenderer {
       ],
       series: [
         {
-          name: "Pressure",
+          name: t("air.pressure", lang),
           type: "bar",
           data: rows.map((d) => d.pressao_med),
           yAxisIndex: 0,
           itemStyle: { color: "#8D9ECE" },
         },
         {
-          name: "Humidity",
+          name: t("air.humidity", lang),
           type: "line",
           data: rows.map((d) => d.umid_med),
           yAxisIndex: 1,

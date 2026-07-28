@@ -1,5 +1,11 @@
 import type { EChartsOption, ECharts } from "echarts";
-import type { ChartData, ChartRenderer, RenderOptions, Theme } from "../types";
+import type {
+  ChartData,
+  ChartRenderer,
+  Language,
+  RenderOptions,
+  Theme,
+} from "../types";
 
 export type { EChartsOption };
 
@@ -14,12 +20,20 @@ export abstract class EChartsRenderer implements ChartRenderer {
     this.boundHandleResize = () => this.handleResize();
   }
 
+  private async loadECharts(): Promise<typeof import("echarts")> {
+    const g = globalThis as Record<string, unknown>;
+    if (typeof g.echarts === "object" && g.echarts !== null) {
+      return g.echarts as typeof import("echarts");
+    }
+    return await import("echarts");
+  }
+
   async render(
     container: HTMLElement,
     data: ChartData,
     options: RenderOptions,
   ): Promise<void> {
-    const echarts = await import("echarts");
+    const echarts = await this.loadECharts();
 
     if (this.chart) {
       this.chart.dispose();
@@ -31,14 +45,19 @@ export abstract class EChartsRenderer implements ChartRenderer {
 
     window.addEventListener("resize", this.boundHandleResize);
 
-    const option = this.buildOption(data, options.theme ?? "light");
+    const option = this.buildOption(
+      data,
+      options.theme ?? "light",
+      options.language,
+    );
+    (option as Record<string, unknown>).backgroundColor = "transparent";
     this.chart.setOption(option, { notMerge: true });
     this.chart.resize();
   }
 
   update(data: ChartData): void {
     if (!this.chart) return;
-    const option = this.buildOption(data, "light");
+    const option = this.buildOption(data, "light", "en");
     this.chart.setOption(option, { notMerge: true });
   }
 
@@ -56,7 +75,11 @@ export abstract class EChartsRenderer implements ChartRenderer {
     this.chart = null;
   }
 
-  protected abstract buildOption(data: ChartData, theme: Theme): EChartsOption;
+  protected abstract buildOption(
+    data: ChartData,
+    theme: Theme,
+    lang?: Language,
+  ): EChartsOption;
 
   protected isDark(theme: Theme): boolean {
     return theme === "dark";

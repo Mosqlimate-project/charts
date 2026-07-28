@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockRender, mockSetSdkKey } = vi.hoisted(() => ({
-  mockRender: vi.fn(),
-  mockSetSdkKey: vi.fn(),
-}));
+const { mockRender, mockSetSdkKey, mockSetApiKey, mockSetLanguage } =
+  vi.hoisted(() => ({
+    mockRender: vi.fn(),
+    mockSetSdkKey: vi.fn(),
+    mockSetApiKey: vi.fn(),
+    mockSetLanguage: vi.fn(),
+  }));
 
 vi.stubGlobal("VERSION", "0.0.0-test");
 
@@ -12,6 +15,8 @@ vi.mock("../mosqlimate", () => {
     Mosqlimate: {
       render: mockRender,
       setSdkKey: mockSetSdkKey,
+      setApiKey: mockSetApiKey,
+      setLanguage: mockSetLanguage,
     },
   };
 });
@@ -127,24 +132,6 @@ describe("autoInit", () => {
     );
   });
 
-  it("passes api_base from data-api-base", async () => {
-    const el = makeElement({
-      "data-chart": "infodengue/rt",
-      "data-disease": "dengue",
-      "data-geocode": "3550308",
-      "data-start": "2024-01-01",
-      "data-end": "2024-01-31",
-      "data-api-base": "https://custom.api",
-    });
-    document.body.appendChild(el);
-
-    await autoInit();
-
-    expect(mockRender).toHaveBeenCalledWith(
-      expect.objectContaining({ api_base: "https://custom.api" }),
-    );
-  });
-
   it("passes uf from data-uf attr", async () => {
     const el = makeElement({
       "data-chart": "contaovos/positivity",
@@ -203,6 +190,75 @@ describe("autoInit", () => {
     expect(result.rendered).toBe(1);
   });
 
+  it("passes language from data-language attr", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+      "data-language": "pt",
+    });
+    document.body.appendChild(el);
+
+    await autoInit();
+
+    expect(mockRender).toHaveBeenCalledWith(
+      expect.objectContaining({ language: "pt" }),
+    );
+  });
+
+  it("calls setLanguage when language option is passed", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit({ language: "pt" });
+
+    expect(mockSetLanguage).toHaveBeenCalledWith("pt");
+    expect(result.rendered).toBe(1);
+  });
+
+  it("calls setApiKey when api_key option is passed", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit({ api_key: "test-api-key-456" });
+
+    expect(mockSetApiKey).toHaveBeenCalledWith("test-api-key-456");
+    expect(result.rendered).toBe(1);
+  });
+
+  it("reports error for invalid data-theme value", async () => {
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+      "data-theme": "neon",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit();
+
+    expect(result.rendered).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].error.message).toContain("neon");
+    expect(mockRender).not.toHaveBeenCalled();
+  });
+
   it("reports error for invalid data-chart value", async () => {
     const el = makeElement({
       "data-chart": "invalid-chart",
@@ -259,6 +315,62 @@ describe("autoInit", () => {
     expect(result.errors[0].error.message).toBe("Network fail");
   });
 
+  it("wraps non-Error render rejection in Error object", async () => {
+    mockRender.mockRejectedValue("string rejection");
+
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit();
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].error.message).toBe("string rejection");
+  });
+
+  it("handles invalid number in geocode gracefully", async () => {
+    mockRender.mockResolvedValue({ id: "mc-test", status: "ready" });
+
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "not-a-number",
+      "data-start": "2024-01-01",
+      "data-end": "2024-01-31",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit();
+
+    expect(result.rendered).toBe(1);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("renders chart without data-start and data-end attrs", async () => {
+    mockRender.mockResolvedValue({ id: "mc-test", status: "ready" });
+
+    const el = makeElement({
+      "data-chart": "infodengue/rt",
+      "data-disease": "dengue",
+      "data-geocode": "3550308",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit();
+
+    expect(result.rendered).toBe(1);
+    expect(mockRender).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: { disease: "dengue", geocode: 3550308 },
+      }),
+    );
+  });
+
   it("ignores empty optional data-* attrs", async () => {
     const el = makeElement({
       "data-chart": "contaovos/eggs_density",
@@ -277,7 +389,6 @@ describe("autoInit", () => {
     expect(opts.theme).toBeUndefined();
     expect(opts.width).toBeUndefined();
     expect(opts.height).toBeUndefined();
-    expect(opts.api_base).toBeUndefined();
   });
 
   it("scoped root only renders elements within that root", async () => {
