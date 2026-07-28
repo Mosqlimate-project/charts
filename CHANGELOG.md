@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/Mosqlimate-project/charts/compare/v1.0.2...v1.0.3) (2026-07-28)
+
+### Bug Fixes
+
+- include the cdn bundles ([37cb2d5](https://github.com/Mosqlimate-project/charts/commit/37cb2d59079f7c263f3ad9616c4ffdaeb85cce56))
+
 ## [1.0.2](https://github.com/Mosqlimate-project/charts/compare/v1.0.1...v1.0.2) (2026-07-28)
 
 ### Bug Fixes
