@@ -48,6 +48,6 @@ export default defineConfig({
     "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
   },
   banner: {
-    js: `/* @mosqlimate/core v${pkg.version} */`,
+    js: `/* @mosqlimate/charts v${pkg.version} */`,
   },
 });
