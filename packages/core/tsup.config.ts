@@ -37,6 +37,7 @@ export default defineConfig([
   {
     entry: ["src/index.ts"],
     format: ["esm", "cjs"],
+    noExternal: ["echarts"],
     dts: true,
     clean: true,
     sourcemap: true,
@@ -47,6 +48,7 @@ export default defineConfig([
       VERSION: JSON.stringify(pkg.version),
       WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),
       "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
+      "process.env.NODE_ENV": JSON.stringify("production"),
     },
     banner: {
       js: `/* @mosqlimate/charts v${pkg.version} */`,
@@ -62,7 +64,6 @@ export default defineConfig([
     target: "es2020",
     outDir: "dist",
     globalName: "Mosqlimate",
-    external: ["echarts"],
     footer: {
       js: "\nif (typeof window !== 'undefined') window.Mosqlimate = Mosqlimate;",
     },
@@ -70,6 +71,7 @@ export default defineConfig([
       VERSION: JSON.stringify(pkg.version),
       WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),
       "process.env.MOSQLIMATE_API_BASE": JSON.stringify(apiBase),
+      "process.env.NODE_ENV": JSON.stringify("production"),
     },
     banner: {
       js: `/* @mosqlimate/charts v${pkg.version} */`,

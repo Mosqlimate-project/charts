@@ -6,25 +6,78 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     permissions:
+      contents: read
       id-token: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
           cache: npm
-          registry-url: "https://registry.npmjs.org"
-      - run: npm ci
-      - run: npm run build --workspaces
-      - name: Bump version from git tag
+
+      - name: Environment info
+        run: |
+          node --version
+          npm --version
+          npm config get registry
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build --workspaces
+
+      - name: Set version from latest git tag
         working-directory: packages/core
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           VERSION=${TAG#v}
-          npm version "$VERSION" --no-git-tag-version --allow-same-version
-      - name: Publish to npm
-        run: npm publish --access public
+
+          echo "Latest tag: $TAG"
+          echo "Publishing version: $VERSION"
+
+          npm version "$VERSION" \
+            --no-git-tag-version \
+            --allow-same-version
+
+      - name: Show package.json
         working-directory: packages/core
+        run: |
+          cat package.json
+
+      - name: Check package on npm
+        working-directory: packages/core
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Package: $PACKAGE_NAME"
+          echo "Version: $PACKAGE_VERSION"
+
+          npm view "$PACKAGE_NAME" versions --json || true
+
+      - name: Verify OIDC environment
+        run: |
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN exists: $([[ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]] && echo yes || echo no)"
+
+      - name: Show npm auth state
+        run: |
+          npm whoami || true
+
+      - name: Publish to npm
+        working-directory: packages/core
+        run: |
+          npm publish \
+            --access public \
+            --provenance \
+            --verbose

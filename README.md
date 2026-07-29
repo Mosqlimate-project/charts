@@ -186,7 +186,7 @@ Example:
 
 ### Deliverables
 
-- [ ] React package
+- [x] React package
 - [ ] Vue package
 - [ ] Angular package
 - [ ] Svelte package
