@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/Mosqlimate-project/charts/compare/v1.1.0...v1.1.1) (2026-07-29)
+
+### Bug Fixes
+
+- update npm on publish.yaml ([efee2e6](https://github.com/Mosqlimate-project/charts/commit/efee2e6b9639bc59e45f2ed8b88eda3e4be9858d))
+
 # [1.1.0](https://github.com/Mosqlimate-project/charts/compare/v1.0.4...v1.1.0) (2026-07-29)
 
 ### Features
