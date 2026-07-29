@@ -23,8 +23,9 @@ export {
 } from "./charts";
 export type { EChartsOption } from "./charts";
 
-export async function registerMap(geoJson: object): Promise<void> {
-  const echarts = await import("echarts");
+import * as echarts from "echarts";
+
+export function registerMap(geoJson: object): void {
   echarts.registerMap(
     "brazil",
     geoJson as Parameters<typeof echarts.registerMap>[1],
@@ -40,6 +41,7 @@ export type {
   ContaOvosChart,
   ChartName,
   Theme,
+  Language,
   InfodengueParams,
   ClimateParams,
   ContaOvosParams,

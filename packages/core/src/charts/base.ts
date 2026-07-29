@@ -1,4 +1,5 @@
 import type { EChartsOption, ECharts } from "echarts";
+import * as echartsModule from "echarts";
 import type {
   ChartData,
   ChartRenderer,
@@ -25,7 +26,7 @@ export abstract class EChartsRenderer implements ChartRenderer {
     if (typeof g.echarts === "object" && g.echarts !== null) {
       return g.echarts as typeof import("echarts");
     }
-    return await import("echarts");
+    return echartsModule;
   }
 
   async render(
