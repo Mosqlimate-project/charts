@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/Mosqlimate-project/charts/compare/v1.0.4...v1.1.0) (2026-07-29)
+
+### Features
+
+- start phase 6 ([22f8d8e](https://github.com/Mosqlimate-project/charts/commit/22f8d8ed9c73b1dea220c4229c1296e847d5913f))
+
 ## [1.0.4](https://github.com/Mosqlimate-project/charts/compare/v1.0.3...v1.0.4) (2026-07-29)
 
 ### Bug Fixes
