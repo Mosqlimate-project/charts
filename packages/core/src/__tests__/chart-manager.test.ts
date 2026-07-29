@@ -467,7 +467,11 @@ describe("ChartManager", () => {
   });
 
   describe("watermark", () => {
-    it("applies watermark as container background after successful render", async () => {
+    function findWm(container: HTMLElement): HTMLElement | null {
+      return container.querySelector(".mosqlimate-watermark");
+    }
+
+    it("applies watermark element after successful render", async () => {
       const container = createContainer();
       const manager = new ChartManager({ theme: "light" }, "https://test.api");
 
@@ -484,12 +488,12 @@ describe("ChartManager", () => {
         },
       });
 
-      expect(container.style.backgroundImage).toContain("url(");
-      expect(container.style.backgroundPosition).toMatch(
-        /(top 30px right 30px|right 30px top 30px)/,
-      );
-      expect(container.style.backgroundRepeat).toBe("no-repeat");
-      expect(container.style.backgroundSize).toBe("100px 100px");
+      const wm = findWm(container);
+      expect(wm).not.toBeNull();
+      expect(wm!.style.backgroundImage).toContain("url(");
+      expect(wm!.style.opacity).toBe("0.5");
+      expect(wm!.style.top).toBe("30px");
+      expect(wm!.style.right).toBe("30px");
     });
 
     it("does not apply watermark on render error", async () => {
@@ -504,7 +508,7 @@ describe("ChartManager", () => {
         params: { geocode: 3550308, start: "2024-01-01", end: "2024-01-31" },
       });
 
-      expect(container.style.backgroundImage).toBe("");
+      expect(findWm(container)).toBeNull();
     });
 
     it("removes watermark on destroy", async () => {
@@ -524,11 +528,11 @@ describe("ChartManager", () => {
         },
       });
 
-      expect(container.style.backgroundImage).toContain("url(");
+      expect(findWm(container)).not.toBeNull();
 
       manager.destroy(instance.id);
 
-      expect(container.style.backgroundImage).toBe("");
+      expect(findWm(container)).toBeNull();
     });
 
     it("sets container position to relative if static", async () => {
