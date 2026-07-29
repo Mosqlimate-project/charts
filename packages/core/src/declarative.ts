@@ -1,5 +1,6 @@
 import type { ChartName, Language, RenderOptions, Theme } from "./types";
 import { Mosqlimate } from "./mosqlimate";
+import { registerChartElement } from "./web-component";
 
 const VALID_CHARTS: readonly string[] = [
   "infodengue/rt",
@@ -77,6 +78,8 @@ export interface AutoInitResult {
 export async function autoInit(
   options?: AutoInitOptions,
 ): Promise<AutoInitResult> {
+  registerChartElement();
+
   const root = options?.root ?? document;
   const elements = root.querySelectorAll<HTMLElement>(SELECTOR);
 

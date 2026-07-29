@@ -26,5 +26,5 @@ jobs:
           VERSION=${TAG#v}
           npm version "$VERSION" --no-git-tag-version --allow-same-version
       - name: Publish to npm
-        run: npm publish --access public --provenance
+        run: npm publish --access public
         working-directory: packages/core
