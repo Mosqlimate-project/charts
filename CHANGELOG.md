@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/Mosqlimate-project/charts/compare/v1.0.3...v1.0.4) (2026-07-29)
+
+### Bug Fixes
+
+- cdn version is not properly rendering the charts ([33369e7](https://github.com/Mosqlimate-project/charts/commit/33369e7bf30cafd7c1e3fca04a27fde89147c415))
+
 ## [1.0.3](https://github.com/Mosqlimate-project/charts/compare/v1.0.2...v1.0.3) (2026-07-28)
 
 ### Bug Fixes
