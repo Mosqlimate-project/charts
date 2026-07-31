@@ -187,9 +187,9 @@ Example:
 ### Deliverables
 
 - [x] React package
-- [ ] Vue package
-- [ ] Angular package
-- [ ] Svelte package
+- [x] Vue package
+- [x] Angular package
+- [x] Svelte package
 
 ---
 
@@ -350,10 +350,10 @@ chart.export("png");
 │   ├── core/           ← Implemented (API client, renderers, web component, auto-init)
 │   ├── charts/         ← stub
 │   ├── web-components/ ← stub
-│   ├── react/          ← stub
-│   ├── vue/            ← stub
-│   ├── angular/        ← stub
-│   ├── svelte/         ← stub
+│   ├── react/          ← Implemented (React wrappers)
+│   ├── vue/            ← Implemented (Vue wrappers)
+│   ├── angular/        ← Implemented (Angular wrappers)
+│   ├── svelte/         ← Implemented (Svelte wrappers)
 │   ├── themes/         ← stub
 │   └── docs/           ← stub
 │
@@ -373,16 +373,16 @@ chart.export("png");
 
 # Milestones
 
-| Milestone | Goal                                                                             | Status                                         |
-| --------- | -------------------------------------------------------------------------------- | ---------------------------------------------- |
-| **M1**    | Render a chart in plain HTML via CDN using `Mosqlimate.render()`.                | ✅ Done                                        |
-| **M2**    | Add multiple chart types with a renderer registry.                               | ✅ Done                                        |
-| **M3**    | Support `<mosqlimate-chart>` custom elements and declarative `data-*` auto-init. | ✅ Done                                        |
-| **M4**    | Publish to npm and a versioned CDN.                                              | 🟡 Partially (npm package exists, CDN pending) |
-| **M5**    | Release React, Vue, Angular, and Svelte wrappers.                                | ❌ Not started                                 |
-| **M6**    | Add themes, exports, and accessibility.                                          | 🟡 Partially (light/dark done)                 |
-| **M7**    | Support dashboards, linked interactions, and live updates.                       | ❌ Not started                                 |
-| **M8**    | Reach a stable 1.0 release with complete documentation and examples.             | ❌ Not started                                 |
+| Milestone | Goal                                                                             | Status                                                       |
+| --------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **M1**    | Render a chart in plain HTML via CDN using `Mosqlimate.render()`.                | ✅ Done                                                      |
+| **M2**    | Add multiple chart types with a renderer registry.                               | ✅ Done                                                      |
+| **M3**    | Support `<mosqlimate-chart>` custom elements and declarative `data-*` auto-init. | ✅ Done                                                      |
+| **M4**    | Publish to npm and a versioned CDN.                                              | 🟡 Partially (npm package exists, CDN pending)               |
+| **M5**    | Release React, Vue, Angular, and Svelte wrappers.                                | 🟡 Partially (all wrappers implemented; npm release pending) |
+| **M6**    | Add themes, exports, and accessibility.                                          | 🟡 Partially (light/dark done)                               |
+| **M7**    | Support dashboards, linked interactions, and live updates.                       | ❌ Not started                                               |
+| **M8**    | Reach a stable 1.0 release with complete documentation and examples.             | ❌ Not started                                               |
 
 # Available Charts
 

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosqlimate Charts — Vue</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <br />
+    <div class="log" id="log">
+      <span id="loader">Loading...</span>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://esm.sh/vue@3.5.13",
+          "@mosqlimate/charts": "/packages/core/dist/index.js",
+          "@mosqlimate/vue": "/packages/vue/dist/index.js"
+        }
+      }
+    </script>
+
+    <!--CONFIG-->
+
+    <script type="module">
+      import { Mosqlimate } from "@mosqlimate/charts";
+      import { createApp, defineComponent, h } from "vue";
+      import {
+        MosqlimateProvider,
+        MosqlimateChart,
+        RtChart,
+        TemperatureChart,
+      } from "@mosqlimate/vue";
+
+      const result = await Mosqlimate.autoInit({
+        api_key: window.__MOSQLIMATE_API_KEY__,
+      });
+
+      const App = defineComponent({
+        render() {
+          return h(
+            MosqlimateProvider,
+            { api_key: window.__MOSQLIMATE_API_KEY__ },
+            {
+              default: () => [
+                h("h2", { style: { marginTop: 0 } }, "infodengue — Rt"),
+                h("div", { class: "grid-2" }, [
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(RtChart, {
+                      disease: "dengue",
+                      geocode: 2300507,
+                      start: "2025-01-01",
+                      end: "2025-12-31",
+                    }),
+                  ),
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(MosqlimateChart, {
+                      chart: "infodengue/rt",
+                      params: {
+                        disease: "dengue",
+                        geocode: 2300507,
+                        start: "2025-01-01",
+                        end: "2025-12-31",
+                      },
+                    }),
+                  ),
+                ]),
+                h("h2", { style: { marginTop: 32 } }, "climate — Temperature"),
+                h("div", { class: "grid-2" }, [
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(TemperatureChart, {
+                      geocode: 2300507,
+                      start: "2025-10-01",
+                      end: "2025-12-31",
+                    }),
+                  ),
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(MosqlimateChart, {
+                      chart: "climate/temperature",
+                      params: {
+                        geocode: 2300507,
+                        start: "2025-10-01",
+                        end: "2025-12-31",
+                      },
+                    }),
+                  ),
+                ]),
+              ],
+            },
+          );
+        },
+      });
+
+      const app = createApp(App);
+      app.mount("#root");
+
+      document.getElementById("loader").remove();
+      document.getElementById("log").textContent =
+        `Rendered ${result.rendered} Mosqlimate chart(s).`;
+    </script>
+  </body>
+</html>

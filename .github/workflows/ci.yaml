@@ -21,7 +21,7 @@ jobs:
       - name: Lint commit messages
         if: github.event_name == 'pull_request'
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
-      - run: npm run build --workspaces
+      - run: npm run build
       - run: npm run typecheck
       - run: npm run test --workspaces --if-present
       - name: Dry-run release (PR only)

@@ -1,90 +1,145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mosqlimate Charts — React</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosqlimate Charts — React</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
 
-  <div id="root"></div>
+    <br />
+    <div class="log" id="log">
+      <span id="loader">Loading...</span>
+    </div>
 
-  <br />
-  <div class="log" id="log">
-    <span id="loader">Loading...</span>
-  </div>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.0.0",
+          "react/": "https://esm.sh/react@19.0.0/",
+          "react-dom": "https://esm.sh/react-dom@19.0.0",
+          "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+          "@mosqlimate/charts": "/packages/core/dist/index.js",
+          "@mosqlimate/react": "/packages/react/dist/index.js"
+        }
+      }
+    </script>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@19.0.0",
-      "react/": "https://esm.sh/react@19.0.0/",
-      "react-dom": "https://esm.sh/react-dom@19.0.0",
-      "react-dom/": "https://esm.sh/react-dom@19.0.0/",
-      "@mosqlimate/charts": "/packages/core/dist/index.js",
-      "@mosqlimate/react": "/packages/react/dist/index.js"
-    }
-  }
-  </script>
+    <!--CONFIG-->
 
-  <!--CONFIG-->
+    <script type="module">
+      import { Mosqlimate } from "@mosqlimate/charts";
+      import { createElement as h, StrictMode } from "react";
+      import { createRoot } from "react-dom/client";
+      import {
+        MosqlimateProvider,
+        MosqlimateChart,
+        RtChart,
+        TemperatureChart,
+      } from "@mosqlimate/react";
 
-  <script type="module">
-    import { Mosqlimate } from "@mosqlimate/charts";
-    import { createElement as h, StrictMode } from "react";
-    import { createRoot } from "react-dom/client";
-    import {
-      MosqlimateProvider,
-      MosqlimateChart,
-      RtChart,
-      TemperatureChart,
-    } from "@mosqlimate/react";
+      const result = await Mosqlimate.autoInit({
+        api_key: window.__MOSQLIMATE_API_KEY__,
+      });
 
-    const result = await Mosqlimate.autoInit({
-      api_key: window.__MOSQLIMATE_API_KEY__,
-    });
+      const ROOT = document.getElementById("root");
+      const root = createRoot(ROOT);
 
-    const ROOT = document.getElementById("root");
-    const root = createRoot(ROOT);
-
-    root.render(
-      h(StrictMode, null,
-        h(MosqlimateProvider, { api_key: window.__MOSQLIMATE_API_KEY__ },
-          h("h2", { style: { fontSize: 12, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 } },
-            "infodengue — Rt"
-          ),
-          h("div", { className: "grid-2" },
-            h("div", { style: { height: 350 } },
-              h(RtChart, { disease: "dengue", geocode: 2300507, start: "2025-01-01", end: "2025-12-31" })
+      root.render(
+        h(
+          StrictMode,
+          null,
+          h(
+            MosqlimateProvider,
+            { api_key: window.__MOSQLIMATE_API_KEY__ },
+            h(
+              "h2",
+              {
+                style: {
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 8,
+                },
+              },
+              "infodengue — Rt",
             ),
-            h("div", { style: { height: 350 } },
-              h(MosqlimateChart, {
-                chart: "infodengue/rt",
-                params: { disease: "dengue", geocode: 2300507, start: "2025-01-01", end: "2025-12-31" }
-              })
-            )
-          ),
-          h("h2", { style: { fontSize: 12, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginTop: 32, marginBottom: 8 } },
-            "climate — Temperature"
-          ),
-          h("div", { className: "grid-2" },
-            h("div", { style: { height: 350 } },
-              h(TemperatureChart, { geocode: 2300507, start: "2025-10-01", end: "2025-12-31" })
+            h(
+              "div",
+              { className: "grid-2" },
+              h(
+                "div",
+                { style: { height: 350 } },
+                h(RtChart, {
+                  disease: "dengue",
+                  geocode: 2300507,
+                  start: "2025-01-01",
+                  end: "2025-12-31",
+                }),
+              ),
+              h(
+                "div",
+                { style: { height: 350 } },
+                h(MosqlimateChart, {
+                  chart: "infodengue/rt",
+                  params: {
+                    disease: "dengue",
+                    geocode: 2300507,
+                    start: "2025-01-01",
+                    end: "2025-12-31",
+                  },
+                }),
+              ),
             ),
-            h("div", { style: { height: 350 } },
-              h(MosqlimateChart, {
-                chart: "climate/temperature",
-                params: { geocode: 2300507, start: "2025-10-01", end: "2025-12-31" }
-              })
-            )
-          )
-        )
-      )
-    );
+            h(
+              "h2",
+              {
+                style: {
+                  fontSize: 12,
+                  color: "#9ca3af",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginTop: 32,
+                  marginBottom: 8,
+                },
+              },
+              "climate — Temperature",
+            ),
+            h(
+              "div",
+              { className: "grid-2" },
+              h(
+                "div",
+                { style: { height: 350 } },
+                h(TemperatureChart, {
+                  geocode: 2300507,
+                  start: "2025-10-01",
+                  end: "2025-12-31",
+                }),
+              ),
+              h(
+                "div",
+                { style: { height: 350 } },
+                h(MosqlimateChart, {
+                  chart: "climate/temperature",
+                  params: {
+                    geocode: 2300507,
+                    start: "2025-10-01",
+                    end: "2025-12-31",
+                  },
+                }),
+              ),
+            ),
+          ),
+        ),
+      );
 
-    document.getElementById("loader").remove();
-    document.getElementById("log").textContent = `Rendered ${result.rendered} Mosqlimate chart(s).`;
-  </script>
-</body>
+      document.getElementById("loader").remove();
+      document.getElementById("log").textContent =
+        `Rendered ${result.rendered} Mosqlimate chart(s).`;
+    </script>
+  </body>
 </html>
