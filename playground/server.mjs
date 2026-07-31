@@ -5,7 +5,10 @@ import { readFile } from "node:fs/promises";
 import { extname, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DIRNAME = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
+const DIRNAME =
+  typeof import.meta.dirname === "string"
+    ? import.meta.dirname
+    : dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(DIRNAME, "..");
 
 function loadEnvFile(filePath) {
@@ -33,12 +36,15 @@ loadEnvFile(resolve(ROOT, ".env"));
 loadEnvFile(resolve(DATA_PLATFORM_ROOT, ".env"));
 
 const PORT = Number(process.env.PORT) || 3000;
-const API_BASE = process.env.MOSQLIMATE_API_BASE || "https://api.mosqlimate.org";
+const API_BASE =
+  process.env.MOSQLIMATE_API_BASE || "https://api.mosqlimate.org";
 
 const API_KEY = process.env.API_KEY;
 const SDK_KEY = process.env.SDK_KEY || API_KEY;
 if (!SDK_KEY || !API_KEY) {
-  console.error("\n  ERROR: SDK_KEY and API_KEY are required. Set both in .env.\n");
+  console.error(
+    "\n  ERROR: SDK_KEY and API_KEY are required. Set both in .env.\n",
+  );
   process.exit(1);
 }
 
@@ -59,7 +65,8 @@ const MIME = {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-SDK-Key, X-UID-Key, Authorization",
+  "Access-Control-Allow-Headers":
+    "Content-Type, X-SDK-Key, X-UID-Key, Authorization",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -83,7 +90,12 @@ function proxyRequest(req, res) {
       url,
       { method: req.method, headers },
       (proxyRes) => {
-        if (redirects > 0 && proxyRes.statusCode >= 300 && proxyRes.statusCode < 400 && proxyRes.headers.location) {
+        if (
+          redirects > 0 &&
+          proxyRes.statusCode >= 300 &&
+          proxyRes.statusCode < 400 &&
+          proxyRes.headers.location
+        ) {
           const next = new URL(proxyRes.headers.location, url);
           console.error(`  proxy ${url} -> ${next} (${proxyRes.statusCode})`);
           doRequest(next, redirects - 1);
@@ -98,9 +110,19 @@ function proxyRequest(req, res) {
           responseHeaders["access-control-allow-origin"] = "*";
 
           if (proxyRes.statusCode >= 400) {
-            console.error(`  chart error: ${url} -> ${proxyRes.statusCode} ${body.toString()}`);
-            res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json", ...CORS_HEADERS });
-            res.end(JSON.stringify({ error: `chart API error: ${proxyRes.statusCode}`, detail: body.toString() }));
+            console.error(
+              `  chart error: ${url} -> ${proxyRes.statusCode} ${body.toString()}`,
+            );
+            res.writeHead(proxyRes.statusCode, {
+              "Content-Type": "application/json",
+              ...CORS_HEADERS,
+            });
+            res.end(
+              JSON.stringify({
+                error: `chart API error: ${proxyRes.statusCode}`,
+                detail: body.toString(),
+              }),
+            );
             return;
           }
 
@@ -113,7 +135,10 @@ function proxyRequest(req, res) {
     proxyReq.on("error", (err) => {
       console.error(`  proxy error: ${err.message}`);
       if (!res.headersSent) {
-        res.writeHead(502, { "Content-Type": "application/json", ...CORS_HEADERS });
+        res.writeHead(502, {
+          "Content-Type": "application/json",
+          ...CORS_HEADERS,
+        });
       }
       res.end(JSON.stringify({ error: err.message }));
     });
@@ -148,10 +173,12 @@ async function handler(req, res) {
     const ext = extname(filePath);
     if (extname(pathname) === ".html") {
       data = Buffer.from(
-        data.toString("utf-8").replace(
-          "<!--CONFIG-->",
-          `<script>window.__MOSQLIMATE_API_KEY__=${JSON.stringify(API_KEY)}</script>`,
-        ),
+        data
+          .toString("utf-8")
+          .replace(
+            "<!--CONFIG-->",
+            `<script>window.__MOSQLIMATE_API_KEY__=${JSON.stringify(API_KEY)}</script>`,
+          ),
       );
     }
     writeCorsHeaders(res);

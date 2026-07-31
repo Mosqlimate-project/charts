@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosqlimate Charts — Svelte</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <br />
+    <div class="log" id="log">
+      <span id="loader">Loading...</span>
+    </div>
+
+    <!--CONFIG-->
+
+    <script type="module">
+      const SVELTE_VERSION = "5.56.8";
+      const CHARTS_URL = new URL("/packages/core/dist/index.js", location.href)
+        .href;
+
+      const REWRITES = {
+        svelte: `https://esm.sh/svelte@${SVELTE_VERSION}`,
+        "svelte/internal/client": `https://esm.sh/svelte@${SVELTE_VERSION}/internal/client`,
+        "svelte/internal/disclose-version": `https://esm.sh/svelte@${SVELTE_VERSION}/internal/disclose-version`,
+        "@mosqlimate/charts": CHARTS_URL,
+      };
+
+      const APP_SRC = `<script lang="ts">
+        import MosqlimateProvider from "./context.svelte";
+        import RtChart from "./RtChart.svelte";
+        import TemperatureChart from "./TemperatureChart.svelte";
+
+        let { api_key }: { api_key?: string } = $props();
+      <\/script>
+
+      <MosqlimateProvider {api_key}>
+        <h2 style="margin-top: 0">infodengue — Rt</h2>
+        <div class="grid-2">
+          <div style="height: 350px">
+            <RtChart disease="dengue" geocode={2300507} start="2025-01-01" end="2025-12-31" />
+          </div>
+          <div style="height: 350px">
+            <RtChart disease="dengue" geocode={2300507} start="2025-01-01" end="2025-12-31" />
+          </div>
+        </div>
+        <h2 style="margin-top: 32px">climate — Temperature</h2>
+        <div class="grid-2">
+          <div style="height: 350px">
+            <TemperatureChart geocode={2300507} start="2025-10-01" end="2025-12-31" />
+          </div>
+          <div style="height: 350px">
+            <TemperatureChart geocode={2300507} start="2025-10-01" end="2025-12-31" />
+          </div>
+        </div>
+      </MosqlimateProvider>`;
+
+      const SOURCES = new Map([
+        ["chart.svelte", "/packages/svelte/dist/chart.svelte"],
+        ["context.svelte", "/packages/svelte/dist/context.svelte"],
+        ["RtChart.svelte", "/packages/svelte/dist/RtChart.svelte"],
+        [
+          "TemperatureChart.svelte",
+          "/packages/svelte/dist/TemperatureChart.svelte",
+        ],
+        ["App.svelte", null],
+      ]);
+
+      const CONTEXT_JS_URL = new URL(
+        "/packages/svelte/dist/context.js",
+        location.href,
+      ).href;
+
+      const registry = new Map();
+
+      function rewriteImports(code) {
+        return code.replace(
+          /(from\s*|import\s*|import\s*\()(['"])([^'"]+)\2/g,
+          (match, pre, quote, spec) => {
+            if (spec.startsWith("./")) {
+              const blob = registry.get(spec);
+              if (blob) return `${pre}${quote}${blob}${quote}`;
+              if (spec === "./context")
+                return `${pre}${quote}${
+                  registry.get("./context") || CONTEXT_JS_URL
+                }${quote}`;
+              return match;
+            }
+            const resolved = REWRITES[spec];
+            return resolved ? `${pre}${quote}${resolved}${quote}` : match;
+          },
+        );
+      }
+
+      async function fetchText(path) {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`fetch ${path}: ${res.status}`);
+        return res.text();
+      }
+
+      function registerBlob(name, code) {
+        const blob = new Blob([code], { type: "text/javascript" });
+        registry.set(`./${name}`, URL.createObjectURL(blob));
+      }
+
+      const log = document.getElementById("log");
+
+      async function main() {
+        let { compile } = {};
+        try {
+          ({ compile } = await import(
+            `https://esm.sh/svelte@${SVELTE_VERSION}/compiler`
+          ));
+        } catch (err) {
+          throw new Error("phase=load-compiler: " + err);
+        }
+
+        let mount;
+        try {
+          ({ mount } = await import(`https://esm.sh/svelte@${SVELTE_VERSION}`));
+        } catch (err) {
+          throw new Error("phase=load-runtime: " + err);
+        }
+
+        const { Mosqlimate } = await import(CHARTS_URL);
+
+        await Mosqlimate.autoInit({
+          api_key: window.__MOSQLIMATE_API_KEY__,
+        });
+
+        try {
+          const contextCode = rewriteImports(await fetchText(CONTEXT_JS_URL));
+          registerBlob("context.js", contextCode);
+          registry.set("./context", registry.get("./context.js"));
+        } catch (err) {
+          throw new Error("phase=context.js: " + err);
+        }
+
+        for (const [name, path] of SOURCES) {
+          let src;
+          try {
+            src = name === "App.svelte" ? APP_SRC : await fetchText(path);
+            const out = compile(src, {
+              generate: "client",
+              dev: false,
+              filename: name,
+            });
+            registerBlob(name, rewriteImports(out.js.code));
+          } catch (err) {
+            throw new Error(`phase=compile:${name}: ` + err);
+          }
+        }
+
+        let App;
+        try {
+          ({ default: App } = await import(registry.get("./App.svelte")));
+        } catch (err) {
+          throw new Error("phase=import-App: " + err);
+        }
+
+        mount(App, {
+          target: document.getElementById("root"),
+          props: { api_key: window.__MOSQLIMATE_API_KEY__ },
+        });
+
+        document.getElementById("loader").remove();
+        log.textContent = "Mounted Svelte runtime-compiled charts.";
+      }
+
+      main().catch((err) => {
+        document.getElementById("loader").remove();
+        log.textContent =
+          "Error: " + (err && err.stack ? err.stack : String(err));
+      });
+    </script>
+  </body>
+</html>

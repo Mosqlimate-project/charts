@@ -37,10 +37,9 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build --workspaces
+        run: npm run build
 
       - name: Set version from latest git tag
-        working-directory: packages/core
         run: |
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           VERSION=${TAG#v}
@@ -48,25 +47,27 @@ jobs:
           echo "Latest tag: $TAG"
           echo "Publishing version: $VERSION"
 
-          npm version "$VERSION" \
-            --no-git-tag-version \
-            --allow-same-version
+          node scripts/sync-versions.mjs "$VERSION"
 
-      - name: Show package.json
-        working-directory: packages/core
+      - name: Show package.json files
         run: |
-          cat package.json
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              NAME=$(node -p "require('./$pkg/package.json').name")
+              VER=$(node -p "require('./$pkg/package.json').version")
+              echo "$NAME@$VER"
+            fi
+          done
 
-      - name: Check package on npm
-        working-directory: packages/core
+      - name: Check packages on npm
         run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-
-          echo "Package: $PACKAGE_NAME"
-          echo "Version: $PACKAGE_VERSION"
-
-          npm view "$PACKAGE_NAME" versions --json || true
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              PACKAGE_NAME=$(node -p "require('./$pkg/package.json').name")
+              echo "Package: $PACKAGE_NAME"
+              npm view "$PACKAGE_NAME" versions --json || true
+            fi
+          done
 
       - name: Verify OIDC environment
         run: |
@@ -80,10 +81,15 @@ jobs:
         run: |
           npm whoami || true
 
-      - name: Publish to npm
-        working-directory: packages/core
+      - name: Publish packages to npm
         run: |
-          npm publish \
-            --access public \
-            --provenance \
-            --verbose
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              NAME=$(node -p "require('./$pkg/package.json').name")
+              echo "Publishing $NAME"
+              npm publish "$pkg" \
+                --access public \
+                --provenance \
+                --verbose
+            fi
+          done

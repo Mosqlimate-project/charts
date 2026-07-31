@@ -34,4 +34,10 @@ describe("watermark", () => {
     applyWatermark(el);
     expect(el.querySelectorAll(".mosqlimate-watermark").length).toBe(1);
   });
+
+  it("removeWatermark without a watermark is a no-op", () => {
+    const el = document.createElement("div");
+    removeWatermark(el);
+    expect(findWm(el)).toBeNull();
+  });
 });

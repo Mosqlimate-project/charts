@@ -7,7 +7,13 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ["**/dist/", "**/node_modules/", "playground/server.mjs"],
+    ignores: [
+      "**/dist/",
+      "**/node_modules/",
+      "**/.svelte-kit/",
+      "playground/server.mjs",
+      "scripts/sync-versions.mjs",
+    ],
   },
   {
     rules: {

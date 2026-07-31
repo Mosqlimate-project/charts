@@ -1,0 +1,43 @@
+{
+  "name": "@mosqlimate/angular",
+  "version": "0.0.1",
+  "description": "Angular wrappers for @mosqlimate/charts",
+  "type": "module",
+  "main": "./dist/fesm2022/mosqlimate-angular.mjs",
+  "module": "./dist/fesm2022/mosqlimate-angular.mjs",
+  "types": "./dist/types/mosqlimate-angular.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@mosqlimate/charts": "*"
+  },
+  "devDependencies": {
+    "@angular/common": "^21.2.6",
+    "@angular/compiler": "^21.2.6",
+    "@angular/compiler-cli": "^21.2.6",
+    "@angular/core": "^21.2.6",
+    "@angular/platform-browser": "^21.2.6",
+    "@mosqlimate/charts": "*",
+    "jsdom": "^29.1.1",
+    "ng-packagr": "^21.2.6",
+    "rxjs": "^7.8.0",
+    "tslib": "^2.8.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.10",
+    "zone.js": "^0.15.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mosqlimate-project/charts.git",
+    "directory": "packages/angular"
+  }
+}

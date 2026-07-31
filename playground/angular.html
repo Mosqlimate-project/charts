@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosqlimate Charts — Angular</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <app-root></app-root>
+
+    <br />
+    <div class="log" id="log">
+      <span id="loader">Loading...</span>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "zone.js": "https://esm.sh/zone.js@0.15.0",
+          "@angular/core": "https://esm.sh/@angular/core@21.2.19",
+          "@angular/core/": "https://esm.sh/@angular/core@21.2.19/",
+          "@angular/common": "https://esm.sh/@angular/common@21.2.19",
+          "@angular/common/": "https://esm.sh/@angular/common@21.2.19/",
+          "@angular/compiler": "https://esm.sh/@angular/compiler@21.2.19",
+          "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@21.2.19",
+          "@angular/platform-browser-dynamic": "https://esm.sh/@angular/platform-browser-dynamic@21.2.19",
+          "rxjs": "https://esm.sh/rxjs@7.8.2",
+          "rxjs/": "https://esm.sh/rxjs@7.8.2/",
+          "@mosqlimate/charts": "/packages/core/dist/index.js",
+          "@mosqlimate/angular": "/packages/angular/dist/fesm2022/mosqlimate-angular.mjs"
+        }
+      }
+    </script>
+
+    <!--CONFIG-->
+
+    <script type="module">
+      import "zone.js";
+      import "@angular/compiler";
+      import { Component } from "@angular/core";
+      import { bootstrapApplication } from "@angular/platform-browser";
+      import {
+        provideMosqlimate,
+        RtChartComponent,
+        TemperatureChartComponent,
+      } from "@mosqlimate/angular";
+
+      const AppComponent = Component({
+        selector: "app-root",
+        standalone: true,
+        imports: [RtChartComponent, TemperatureChartComponent],
+        template: `
+          <h2 style="margin-top: 0">infodengue — Rt</h2>
+          <div class="grid-2">
+            <div style="height: 350px">
+              <ngx-mosqlimate-rt-chart
+                disease="dengue"
+                [geocode]="2300507"
+                start="2025-01-01"
+                end="2025-12-31"
+              ></ngx-mosqlimate-rt-chart>
+            </div>
+            <div style="height: 350px">
+              <ngx-mosqlimate-rt-chart
+                disease="dengue"
+                [geocode]="2300507"
+                start="2025-01-01"
+                end="2025-12-31"
+              ></ngx-mosqlimate-rt-chart>
+            </div>
+          </div>
+          <h2 style="margin-top: 32px">climate — Temperature</h2>
+          <div class="grid-2">
+            <div style="height: 350px">
+              <ngx-mosqlimate-temperature-chart
+                [geocode]="2300507"
+                start="2025-10-01"
+                end="2025-12-31"
+              ></ngx-mosqlimate-temperature-chart>
+            </div>
+            <div style="height: 350px">
+              <ngx-mosqlimate-temperature-chart
+                [geocode]="2300507"
+                start="2025-10-01"
+                end="2025-12-31"
+              ></ngx-mosqlimate-temperature-chart>
+            </div>
+          </div>
+        `,
+      })(class AppComponent {});
+
+      await bootstrapApplication(AppComponent, {
+        providers: [
+          provideMosqlimate({ api_key: window.__MOSQLIMATE_API_KEY__ }),
+        ],
+      });
+
+      document.getElementById("loader").remove();
+      document.getElementById("log").textContent =
+        "Bootstrapped Angular charts (JIT).";
+    </script>
+  </body>
+</html>
