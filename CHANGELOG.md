@@ -1,3 +1,9 @@
+# [1.2.0](https://github.com/Mosqlimate-project/charts/compare/v1.1.1...v1.2.0) (2026-07-31)
+
+### Features
+
+- add Vue, Svelte and Angular wrapper packages ([fea869d](https://github.com/Mosqlimate-project/charts/commit/fea869df65b1316028a0c08f196453781266aa3a))
+
 ## [1.1.1](https://github.com/Mosqlimate-project/charts/compare/v1.1.0...v1.1.1) (2026-07-29)
 
 ### Bug Fixes
