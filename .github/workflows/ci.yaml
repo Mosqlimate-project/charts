@@ -25,13 +25,18 @@ jobs:
       - run: npm run typecheck
       - run: npm run test --workspaces --if-present
       - run: npm run test:coverage -w @mosqlimate/charts -w @mosqlimate/svelte
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+      - name: Coverage comment (core)
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: packages/core/coverage/lcov.info,packages/svelte/coverage/lcov.info
-          flags: core,svelte
-          fail_ci_if_error: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./packages/core/coverage/lcov.info
+      - name: Coverage comment (svelte)
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./packages/svelte/coverage/lcov.info
       - name: Dry-run release (PR only)
         if: github.event_name == 'pull_request'
         env:
