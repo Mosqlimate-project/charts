@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/Mosqlimate-project/charts/compare/v1.2.0...v1.2.1) (2026-07-31)
+
+### Bug Fixes
+
+- **publish:** refuse to publish if any target version exists on npm ([b684aad](https://github.com/Mosqlimate-project/charts/commit/b684aad176435df718549a50ae234839912612f3))
+
 # [1.2.0](https://github.com/Mosqlimate-project/charts/compare/v1.1.1...v1.2.0) (2026-07-31)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@mosqlimate/angular",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Angular wrappers for @mosqlimate/charts",
   "type": "module",
   "main": "./dist/fesm2022/mosqlimate-angular.mjs",

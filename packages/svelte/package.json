@@ -1,6 +1,6 @@
 {
   "name": "@mosqlimate/svelte",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Svelte wrappers for @mosqlimate/charts",
   "type": "module",
   "svelte": "./dist/index.js",
