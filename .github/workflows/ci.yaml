@@ -24,6 +24,14 @@ jobs:
       - run: npm run build
       - run: npm run typecheck
       - run: npm run test --workspaces --if-present
+      - run: npm run test:coverage -w @mosqlimate/charts -w @mosqlimate/svelte
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/core/coverage/lcov.info,packages/svelte/coverage/lcov.info
+          flags: core,svelte
+          fail_ci_if_error: true
       - name: Dry-run release (PR only)
         if: github.event_name == 'pull_request'
         env:
