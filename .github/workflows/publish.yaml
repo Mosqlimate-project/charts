@@ -81,6 +81,27 @@ jobs:
         run: |
           npm whoami || true
 
+      - name: Preflight - target versions must be free on npm
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION=${TAG#v}
+          FAILED=0
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              NAME=$(node -p "require('./$pkg/package.json').name")
+              if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+                echo "error: $NAME@$VERSION already exists on npm"
+                FAILED=1
+              else
+                echo "ok: $NAME@$VERSION is free"
+              fi
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Refusing to publish: at least one package already has version $VERSION on the registry. Nothing was published - all packages must be at the same version, so bump the version (new tag) and retry."
+            exit 1
+          fi
+
       - name: Publish packages to npm
         run: |
           for pkg in packages/*/; do
