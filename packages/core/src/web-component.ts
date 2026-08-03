@@ -8,6 +8,8 @@ const ATTR_LIST = [
   "start",
   "end",
   "uf",
+  "year",
+  "metric",
   "theme",
   "width",
   "height",
@@ -85,6 +87,8 @@ export class MosqlimateChart extends HTMLElement {
     const start = this.getAttribute("start");
     const end = this.getAttribute("end");
     const uf = this.getAttribute("uf");
+    const year = parseNumber(this.getAttribute("year"));
+    const metric = this.getAttribute("metric");
     const theme = this.getAttribute("theme") as Theme | null;
     const language = this.getAttribute("language") as Language | null;
     const width = parseNumber(this.getAttribute("width"));
@@ -96,6 +100,8 @@ export class MosqlimateChart extends HTMLElement {
     if (start) params.start = start;
     if (end) params.end = end;
     if (uf) params.uf = uf;
+    if (year !== undefined) params.year = year;
+    if (metric) params.metric = metric;
 
     Mosqlimate.render({
       target: this._container,

@@ -17,4 +17,5 @@ export {
   PositivityChartComponent,
   MapChartComponent,
   ScatterChartComponent,
+  EpiscannerChartComponent,
 } from "./typed-charts";

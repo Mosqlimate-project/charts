@@ -4,6 +4,7 @@ import type {
   Theme,
   Language,
   ChartParams,
+  EpiscannerMetric,
 } from "@mosqlimate/charts";
 import { MosqlimateChart } from "./chart";
 
@@ -181,6 +182,32 @@ export function ScatterChart({ start, end, ...rest }: ScatterChartProps) {
     <MosqlimateChart
       chart="contaovos/map/scatter"
       params={{ start, end } as ChartParams}
+      {...rest}
+    />
+  );
+}
+
+export interface EpiscannerChartProps {
+  disease: Disease;
+  uf: UF;
+  year: number;
+  metric?: EpiscannerMetric;
+  theme?: Theme;
+  language?: Language;
+  width?: number;
+  height?: number;
+}
+export function EpiscannerChart({
+  disease,
+  uf,
+  year,
+  metric,
+  ...rest
+}: EpiscannerChartProps) {
+  return (
+    <MosqlimateChart
+      chart="episcanner"
+      params={{ disease, uf, year, metric } as ChartParams}
       {...rest}
     />
   );

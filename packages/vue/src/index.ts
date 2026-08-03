@@ -11,6 +11,7 @@ export {
   PositivityChart,
   MapChart,
   ScatterChart,
+  EpiscannerChart,
 } from "./typed-charts";
 export type {
   RtChartProps,
@@ -21,4 +22,5 @@ export type {
   PositivityChartProps,
   MapChartProps,
   ScatterChartProps,
+  EpiscannerChartProps,
 } from "./typed-charts";

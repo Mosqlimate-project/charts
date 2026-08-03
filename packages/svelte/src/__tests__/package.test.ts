@@ -16,6 +16,7 @@ import {
   AccumulatedWaterfallChart,
   AirChart,
   EggsDensityChart,
+  EpiscannerChart,
   MapChart,
   MosqlimateChart,
   MosqlimateProvider,
@@ -38,6 +39,7 @@ describe("package public API", () => {
     expect(PositivityChart).toBeDefined();
     expect(MapChart).toBeDefined();
     expect(ScatterChart).toBeDefined();
+    expect(EpiscannerChart).toBeDefined();
     expect(typeof useMosqlimate).toBe("function");
   });
 });

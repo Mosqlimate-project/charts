@@ -29,7 +29,8 @@ export type UF =
   | "TO"
   | "DF";
 
-export type ChartCategory = "infodengue" | "climate" | "contaovos";
+export type ChartCategory =
+  "infodengue" | "climate" | "contaovos" | "episcanner";
 
 export type InfodengueChart = "infodengue/rt";
 
@@ -44,10 +45,16 @@ export type ContaOvosChart =
   | "contaovos/map"
   | "contaovos/map/scatter";
 
-export type ChartName = InfodengueChart | ClimateChart | ContaOvosChart;
+export type EpiscannerChart = "episcanner";
+
+export type ChartName =
+  InfodengueChart | ClimateChart | ContaOvosChart | EpiscannerChart;
 
 export type Theme = "light" | "dark" | "minimal" | "publication" | "dashboard";
 export type Language = "en" | "pt";
+
+export type EpiscannerMetric =
+  "R0" | "peak_week" | "beta" | "gamma" | "total_cases" | "alpha" | "sum_res";
 
 // --- Input params ---
 
@@ -82,12 +89,20 @@ export interface ContaOvosMapParams {
   end: string;
 }
 
+export interface EpiscannerParams {
+  disease: Disease;
+  uf: UF;
+  year: number;
+  metric?: EpiscannerMetric;
+}
+
 export type ChartParams =
   | InfodengueParams
   | ClimateParams
   | ContaOvosParams
   | ContaOvosPositivityParams
-  | ContaOvosMapParams;
+  | ContaOvosMapParams
+  | EpiscannerParams;
 
 // --- Output data ---
 
@@ -143,6 +158,24 @@ export interface ContaOvosMapScatterRow {
   municipality: string;
 }
 
+export interface EpiscannerRow {
+  disease: string;
+  CID10: string;
+  year: number;
+  geocode: number;
+  muni_name: string;
+  peak_week: number;
+  beta: number;
+  gamma: number;
+  R0: number;
+  total_cases: number;
+  alpha: number;
+  sum_res: number;
+  ep_ini: string;
+  ep_end: string;
+  ep_dur: number;
+}
+
 // --- Chart data wrapper ---
 
 export type ChartDataMap = {
@@ -154,6 +187,7 @@ export type ChartDataMap = {
   "contaovos/positivity": ContaOvosPositivityRow[];
   "contaovos/map": ContaOvosMapStateRow[];
   "contaovos/map/scatter": ContaOvosMapScatterRow[];
+  episcanner: EpiscannerRow[];
 };
 
 export interface ChartData<T extends ChartName = ChartName> {
@@ -172,6 +206,7 @@ export interface RenderOptions<T extends ChartName = ChartName> {
   language?: Language;
   width?: number;
   height?: number;
+  maps_base?: string;
 }
 
 // --- Renderer contract ---
@@ -204,6 +239,7 @@ export interface ChartInstance {
 export interface MosqlimateConfig {
   theme: Theme;
   language?: Language;
+  maps_base?: string;
 }
 
 export type StatusChangeCallback = (event: StatusChangeEvent) => void;

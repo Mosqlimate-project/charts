@@ -2,6 +2,7 @@ import { Component, Directive, Input, type OnChanges } from "@angular/core";
 import type {
   ChartParams,
   Disease,
+  EpiscannerMetric,
   Language,
   Theme,
   UF,
@@ -259,6 +260,37 @@ export class ScatterChartComponent extends MosqlimateTypedChartComponent {
     return {
       start: this.start,
       end: this.end,
+    } as ChartParams;
+  }
+}
+
+@Component({
+  selector: "ngx-mosqlimate-episcanner-chart",
+  standalone: true,
+  imports: [MosqlimateChartComponent],
+  template: `
+    <ngx-mosqlimate-chart
+      [chart]="'episcanner'"
+      [params]="params"
+      [theme]="theme"
+      [language]="language"
+      [width]="width"
+      [height]="height"
+    ></ngx-mosqlimate-chart>
+  `,
+})
+export class EpiscannerChartComponent extends MosqlimateTypedChartComponent {
+  @Input() disease!: Disease;
+  @Input() uf!: UF;
+  @Input() year!: number;
+  @Input() metric?: EpiscannerMetric;
+
+  protected override buildParams(): ChartParams {
+    return {
+      disease: this.disease,
+      uf: this.uf,
+      year: this.year,
+      metric: this.metric,
     } as ChartParams;
   }
 }

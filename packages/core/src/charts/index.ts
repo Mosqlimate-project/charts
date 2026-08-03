@@ -12,3 +12,4 @@ export {
   MapChart,
   ScatterChart,
 } from "./contaovos";
+export { EpiscannerChart } from "./episcanner";

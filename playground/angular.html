@@ -40,16 +40,26 @@
       import "@angular/compiler";
       import { Component } from "@angular/core";
       import { bootstrapApplication } from "@angular/platform-browser";
+      import { Mosqlimate } from "@mosqlimate/charts";
       import {
         provideMosqlimate,
         RtChartComponent,
         TemperatureChartComponent,
+        EpiscannerChartComponent,
       } from "@mosqlimate/angular";
+
+      Mosqlimate.configure({
+        maps_base: "/packages/core/dist/maps",
+      });
 
       const AppComponent = Component({
         selector: "app-root",
         standalone: true,
-        imports: [RtChartComponent, TemperatureChartComponent],
+        imports: [
+          RtChartComponent,
+          TemperatureChartComponent,
+          EpiscannerChartComponent,
+        ],
         template: `
           <h2 style="margin-top: 0">infodengue — Rt</h2>
           <div class="grid-2">
@@ -85,6 +95,25 @@
                 start="2025-10-01"
                 end="2025-12-31"
               ></ngx-mosqlimate-temperature-chart>
+            </div>
+          </div>
+          <h2 style="margin-top: 32px">episcanner — Episcanner (SP · dengue · 2024)</h2>
+          <div class="grid-2">
+            <div style="height: 350px">
+              <ngx-mosqlimate-episcanner-chart
+                disease="dengue"
+                uf="SP"
+                [year]="2024"
+                metric="R0"
+              ></ngx-mosqlimate-episcanner-chart>
+            </div>
+            <div style="height: 350px">
+              <ngx-mosqlimate-episcanner-chart
+                disease="dengue"
+                uf="SP"
+                [year]="2024"
+                metric="R0"
+              ></ngx-mosqlimate-episcanner-chart>
             </div>
           </div>
         `,

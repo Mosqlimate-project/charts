@@ -34,7 +34,12 @@
         MosqlimateChart,
         RtChart,
         TemperatureChart,
+        EpiscannerChart,
       } from "@mosqlimate/vue";
+
+      Mosqlimate.configure({
+        maps_base: "/packages/core/dist/maps",
+      });
 
       const result = await Mosqlimate.autoInit({
         api_key: window.__MOSQLIMATE_API_KEY__,
@@ -93,6 +98,36 @@
                         geocode: 2300507,
                         start: "2025-10-01",
                         end: "2025-12-31",
+                      },
+                    }),
+                  ),
+                ]),
+                h(
+                  "h2",
+                  { style: { marginTop: 32 } },
+                  "episcanner — Episcanner (SP · dengue · 2024)",
+                ),
+                h("div", { class: "grid-2" }, [
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(EpiscannerChart, {
+                      disease: "dengue",
+                      uf: "SP",
+                      year: 2024,
+                      metric: "R0",
+                    }),
+                  ),
+                  h(
+                    "div",
+                    { style: { height: "350px" } },
+                    h(MosqlimateChart, {
+                      chart: "episcanner",
+                      params: {
+                        disease: "dengue",
+                        uf: "SP",
+                        year: 2024,
+                        metric: "R0",
                       },
                     }),
                   ),

@@ -44,6 +44,7 @@ export default defineConfig([
     minify: false,
     target: "es2020",
     outDir: "dist",
+    onSuccess: "cp -r src/maps dist/maps",
     define: {
       VERSION: JSON.stringify(pkg.version),
       WATERMARK_DATA_URI: JSON.stringify(watermarkDataUri),

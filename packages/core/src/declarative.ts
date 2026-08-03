@@ -11,6 +11,7 @@ const VALID_CHARTS: readonly string[] = [
   "contaovos/positivity",
   "contaovos/map",
   "contaovos/map/scatter",
+  "episcanner",
 ];
 
 const VALID_THEMES: readonly string[] = [
@@ -112,6 +113,7 @@ export async function autoInit(
     const width = parseNumber(ds.width);
     const height = parseNumber(ds.height);
     const geocode = parseNumber(ds.geocode);
+    const year = parseNumber(ds.year);
     const theme = ds.theme as Theme | undefined;
     const language = (ds.language as Language | undefined) ?? options?.language;
 
@@ -129,6 +131,8 @@ export async function autoInit(
     if (ds.start !== undefined) params.start = ds.start;
     if (ds.end !== undefined) params.end = ds.end;
     if (ds.uf !== undefined) params.uf = ds.uf;
+    if (year !== undefined) params.year = year;
+    if (ds.metric !== undefined) params.metric = ds.metric;
 
     const containerStyle = parseContainerStyle(ds);
     applyContainerStyle(el, containerStyle);

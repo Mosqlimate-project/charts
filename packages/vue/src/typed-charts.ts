@@ -2,6 +2,7 @@ import { defineComponent, h, type PropType } from "vue";
 import type {
   ChartParams,
   Disease,
+  EpiscannerMetric,
   Language,
   Theme,
   UF,
@@ -278,6 +279,43 @@ export const ScatterChart = defineComponent({
         params: {
           start: props.start,
           end: props.end,
+        } as ChartParams,
+        theme: props.theme,
+        language: props.language,
+        width: props.width,
+        height: props.height,
+      });
+  },
+});
+
+export interface EpiscannerChartProps {
+  disease: Disease;
+  uf: UF;
+  year: number;
+  metric?: EpiscannerMetric;
+  theme?: Theme;
+  language?: Language;
+  width?: number;
+  height?: number;
+}
+export const EpiscannerChart = defineComponent({
+  name: "EpiscannerChart",
+  props: {
+    disease: { type: String as PropType<Disease>, required: true },
+    uf: { type: String as PropType<UF>, required: true },
+    year: { type: Number, required: true },
+    metric: { type: String as PropType<EpiscannerMetric>, default: undefined },
+    ...commonProps,
+  },
+  setup(props) {
+    return () =>
+      h(MosqlimateChart, {
+        chart: "episcanner",
+        params: {
+          disease: props.disease,
+          uf: props.uf,
+          year: props.year,
+          metric: props.metric,
         } as ChartParams,
         theme: props.theme,
         language: props.language,

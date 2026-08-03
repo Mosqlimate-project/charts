@@ -7,6 +7,7 @@ const mockECharts = {
     dispose: vi.fn(),
   })),
   registerMap: vi.fn(),
+  getMap: vi.fn(() => undefined),
 };
 
 vi.stubGlobal("echarts", mockECharts);

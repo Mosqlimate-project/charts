@@ -32,6 +32,7 @@
         import MosqlimateProvider from "./context.svelte";
         import RtChart from "./RtChart.svelte";
         import TemperatureChart from "./TemperatureChart.svelte";
+        import EpiscannerChart from "./EpiscannerChart.svelte";
 
         let { api_key }: { api_key?: string } = $props();
       <\/script>
@@ -55,6 +56,15 @@
             <TemperatureChart geocode={2300507} start="2025-10-01" end="2025-12-31" />
           </div>
         </div>
+        <h2 style="margin-top: 32px">episcanner — Episcanner (SP · dengue · 2024)</h2>
+        <div class="grid-2">
+          <div style="height: 350px">
+            <EpiscannerChart disease="dengue" uf="SP" year={2024} metric="R0" />
+          </div>
+          <div style="height: 350px">
+            <EpiscannerChart disease="dengue" uf="SP" year={2024} metric="R0" />
+          </div>
+        </div>
       </MosqlimateProvider>`;
 
       const SOURCES = new Map([
@@ -64,6 +74,10 @@
         [
           "TemperatureChart.svelte",
           "/packages/svelte/dist/TemperatureChart.svelte",
+        ],
+        [
+          "EpiscannerChart.svelte",
+          "/packages/svelte/dist/EpiscannerChart.svelte",
         ],
         ["App.svelte", null],
       ]);
@@ -125,6 +139,10 @@
         }
 
         const { Mosqlimate } = await import(CHARTS_URL);
+
+        Mosqlimate.configure({
+          maps_base: "/packages/core/dist/maps",
+        });
 
         await Mosqlimate.autoInit({
           api_key: window.__MOSQLIMATE_API_KEY__,

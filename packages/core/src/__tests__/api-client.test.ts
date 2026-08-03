@@ -127,6 +127,45 @@ describe("ApiClient", () => {
       expect(result.category).toBe("contaovos");
     });
 
+    it("fetches episcanner with correct endpoint and params", async () => {
+      const episcannerData = [
+        {
+          disease: "dengue",
+          CID10: "A90",
+          year: 2024,
+          geocode: 2304400,
+          muni_name: "Fortaleza",
+          peak_week: 12,
+          beta: 0.25,
+          gamma: 0.2,
+          R0: 1.5,
+          total_cases: 1200,
+          alpha: 0.01,
+          sum_res: 0.02,
+          ep_ini: "2024-01-01",
+          ep_end: "2024-06-30",
+          ep_dur: 26,
+        },
+      ];
+      fakeFetch.mockResolvedValue(okResponse(episcannerData));
+
+      const client = new ApiClient("https://test.api");
+      const result = await client.fetchChart({
+        target: document.createElement("div"),
+        chart: "episcanner",
+        params: { disease: "dengue", uf: "CE", year: 2024 },
+      });
+
+      const [url] = fakeFetch.mock.calls[0];
+      expect(url).toBe(
+        "https://test.api/api/vis/charts/episcanner/" +
+          "?disease=dengue&uf=CE&year=2024",
+      );
+      expect(result.chart).toBe("episcanner");
+      expect(result.category).toBe("episcanner");
+      expect(result.data).toEqual(episcannerData);
+    });
+
     it("sends X-SDK-Key header when sdk_key is set", async () => {
       fakeFetch.mockResolvedValue(
         okResponse([{ data_iniSE: "2024-01-07", Rt: 1.2 }]),

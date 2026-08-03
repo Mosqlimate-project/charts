@@ -3,6 +3,7 @@ import { cleanup, render } from "@testing-library/svelte";
 import AccumulatedWaterfallChart from "../lib/AccumulatedWaterfallChart.svelte";
 import AirChart from "../lib/AirChart.svelte";
 import EggsDensityChart from "../lib/EggsDensityChart.svelte";
+import EpiscannerChart from "../lib/EpiscannerChart.svelte";
 import MapChart from "../lib/MapChart.svelte";
 import PositivityChart from "../lib/PositivityChart.svelte";
 import RtChart from "../lib/RtChart.svelte";
@@ -101,6 +102,12 @@ const cases = [
     chart: "contaovos/map/scatter",
     props: { start: "2025-01-01", end: "2025-12-31" },
   },
+  {
+    name: "EpiscannerChart",
+    component: EpiscannerChart,
+    chart: "episcanner",
+    props: { disease: "dengue", uf: "CE", year: 2024 },
+  },
 ];
 
 describe("typed chart wrappers", () => {
@@ -108,7 +115,7 @@ describe("typed chart wrappers", () => {
     "$name renders $chart",
     async ({ component, chart, props }) => {
       mocks.render.mockResolvedValue(mockInstance("typed-1"));
-      render(component, { props } as never);
+      render(component as never, { props } as never);
       await flush();
       expect(mocks.render).toHaveBeenCalledWith(
         expect.objectContaining({ chart }),
