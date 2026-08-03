@@ -2,6 +2,7 @@ import type {
   ChartName,
   ChartParams,
   Disease,
+  EpiscannerMetric,
   Language,
   Theme,
   UF,
@@ -97,6 +98,17 @@ export interface MapChartProps {
 export interface ScatterChartProps {
   start?: string;
   end?: string;
+  theme?: Theme;
+  language?: Language;
+  width?: number;
+  height?: number;
+}
+
+export interface EpiscannerChartProps {
+  disease: Disease;
+  uf: UF;
+  year: number;
+  metric?: EpiscannerMetric;
   theme?: Theme;
   language?: Language;
   width?: number;

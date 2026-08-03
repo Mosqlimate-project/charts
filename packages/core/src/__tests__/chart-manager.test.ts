@@ -33,6 +33,7 @@ vi.mock("../charts", () => {
     PositivityChart: MockRenderer,
     MapChart: MockRenderer,
     ScatterChart: MockRenderer,
+    EpiscannerChart: MockRenderer,
   };
 });
 
@@ -197,6 +198,22 @@ describe("ChartManager", () => {
         });
         expect(instance.status).toBe("ready");
       }
+    });
+
+    it("renders the episcanner chart", async () => {
+      const container = createContainer();
+      const manager = new ChartManager({ theme: "light" }, "https://test.api");
+
+      mockFetchChart.mockResolvedValue(makeRtResponse());
+
+      const instance = await manager.render({
+        target: container,
+        chart: "episcanner",
+        params: { disease: "dengue", uf: "CE", year: 2024 },
+      });
+
+      expect(instance.status).toBe("ready");
+      expect(instance.options.chart).toBe("episcanner");
     });
   });
 

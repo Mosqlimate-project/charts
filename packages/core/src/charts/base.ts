@@ -21,7 +21,7 @@ export abstract class EChartsRenderer implements ChartRenderer {
     this.boundHandleResize = () => this.handleResize();
   }
 
-  private async loadECharts(): Promise<typeof import("echarts")> {
+  protected async loadECharts(): Promise<typeof import("echarts")> {
     const g = globalThis as Record<string, unknown>;
     if (typeof g.echarts === "object" && g.echarts !== null) {
       return g.echarts as typeof import("echarts");

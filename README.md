@@ -10,15 +10,19 @@ Create a framework-agnostic charting SDK that allows anyone to embed Alertadengu
 
 **Goal:** Render a chart in a plain HTML page.
 
-### Deliverables
+### Implemented
 
-- [x] Create `@mosqlimate/charts`
-- [x] API client
-- [x] Chart manager
-- [x] Renderer lifecycle
-- [x] Loading & error states
-- [x] Responsive resizing
-- [x] Public JavaScript API
+- **`@mosqlimate/charts` package** — ESM + CJS dual builds with TypeScript types
+- **`Mosqlimate.render({ target, chart, params, theme, language, width, height })`** — renders any chart into a DOM element or CSS selector
+- **`Mosqlimate.configure({ theme, language, maps_base, sdk_key, api_key })`** — global defaults
+- **`Mosqlimate.setSdkKey()` / `setApiKey()` / `setLanguage()`** — runtime configuration
+- **`Mosqlimate.update(id, data)` / `resize(id, width, height)` / `destroy(id)` / `destroyAll()`** — instance lifecycle
+- **`Mosqlimate.onStatusChange()`** — subscribe to per-instance `loading` / `ready` / `error` status events
+- **`ChartManager`** — instance registry, renderer lifecycle, and error rendering
+- **`ApiClient`** — fetches `https://api.mosqlimate.org/api/vis/charts/<chart>/` with `X-SDK-Key` / `X-UID-Key` headers, CORS-aware error messages, and configurable base URL via `MOSQLIMATE_API_BASE`
+- **Loading & error states** — failures render a localized `role="alert"` banner into the container
+- **Responsive resizing** — charts auto-resize with the container
+- **Bundled maps** — `@mosqlimate/charts` ships per-UF municipality GeoJSON (`dist/maps/<uf>.json`, e.g. `sp.json`, properties `geocode` + `name`); `EpiscannerChart` auto-fetches and registers the right map at render time from `maps_base` (defaults to the package's own unpkg URL, overridable via `configure`)
 
 Example:
 
@@ -48,20 +52,33 @@ ChartRenderer
             │   ├── TemperatureChart
             │   ├── AccumulatedWaterfallChart
             │   └── AirChart
-            └── contaovos/
-                ├── EggsDensityChart
-                ├── PositivityChart
-                ├── MapChart
-                └── ScatterChart
+            ├── contaovos/
+            │   ├── EggsDensityChart
+            │   ├── PositivityChart
+            │   ├── MapChart
+            │   └── ScatterChart
+            └── episcanner/
+                └── EpiscannerChart
 ```
 
-### Deliverables
+### Implemented
 
-- [x] Renderer interface
-- [x] Render
-- [x] Update
-- [x] Resize
-- [x] Destroy
+- **`ChartRenderer` interface** — every chart implements `render`, `update`, `resize`, and `destroy`
+- **`EChartsRenderer` base class** — backed by Apache ECharts 6 (canvas renderer), debounced auto-resize on window resize
+- **Light/dark theming** — shared axis, tooltip, and title colors via `axisColors()`
+- **Localized labels** — en/pt translations via i18n `t()` keys
+- **Concrete chart renderers**:
+  - `RtChart` — Rt line with smooth curve, dashed threshold at Rt = 1, green/red value coloring
+  - `TemperatureChart` — max / avg / min temperature lines with inside + slider `dataZoom`
+  - `AccumulatedWaterfallChart` — stacked total/avg precipitation bars with `dataZoom`
+  - `AirChart` — humidity (line) + pressure (bar) on dual axes with `dataZoom`
+  - `EggsDensityChart` — egg count over epiweeks line chart
+  - `PositivityChart` — positivity % bar chart by location
+  - `MapChart` — Brazil choropleth map (GeoJSON registered via `registerMap()`)
+  - `ScatterChart` — trap latitude/longitude scatter plot
+  - `EpiscannerChart` — per-UF choropleth map of episcanner estimates (peak week, R0, total cases, etc.)
+- **`PlaceholderRenderer`** — fallback for unregistered charts
+- **Watermark** — Mosqlimate watermark overlay applied to every rendered chart
 
 ---
 
@@ -75,13 +92,16 @@ Example:
 GET /api/vis/charts/infodengue/rt/
 GET /api/vis/charts/climate/temperature/
 GET /api/vis/charts/contaovos/eggs_density/
+GET /api/vis/charts/episcanner/?disease=dengue&uf=CE&year=2024
 ```
 
-### Deliverables
+### Implemented
 
-- [x] Stable response format
-- [x] Versioned API
-- [x] Backend serializers optimized for charts
+- **Visualization endpoints** — `GET /api/vis/charts/<category>/<chart>/`
+- **Stable response format** — every response is wrapped as `{ chart, category, data }`
+- **Typed row shapes per chart** — `ChartDataMap` covers Rt, temperature, precipitation, humidity/pressure, egg density, positivity, map state, scatter, and episcanner rows
+- **Query params** — `disease`, `geocode`, `uf`, `start`, `end`, `year`, and `metric`
+- **Configurable base URL** — via `MOSQLIMATE_API_BASE` or the `ApiClient` constructor
 
 ---
 
@@ -105,11 +125,12 @@ Mosqlimate.render({
 });
 ```
 
-### Deliverables
+### Implemented
 
-- [x] Registry
-- [x] Dynamic loading
-- [x] Chart metadata
+- **Name → renderer registry** — `ChartManager` resolves every `ChartName` to its renderer class at render time
+- **Typed chart names** — `ChartName` union of 9 charts across `infodengue` / `climate` / `contaovos` / `episcanner`
+- **Typed metadata** — per-chart params and data row types exported from the package
+- **Fallback** — unknown chart names render a `PlaceholderRenderer` instead of failing
 
 ---
 
@@ -156,12 +177,12 @@ Support multiple embedding styles.
 </mosqlimate-chart>
 ```
 
-### Deliverables
+### Implemented
 
-- [x] `Mosqlimate.render()` — JavaScript API
-- [x] `Mosqlimate.autoInit()` — Declarative auto-discovery via `data-chart`
-- [x] `<mosqlimate-chart>` — Custom element with Shadow DOM
-- [x] Automatic initialization on page load
+- **`Mosqlimate.render()`** — JavaScript API
+- **`Mosqlimate.autoInit({ root, sdk_key, api_key, language })`** — declarative `data-chart` auto-discovery that validates chart names/themes, applies `data-background` / `data-border` / `data-padding` container styles, and returns `{ rendered, errors }`
+- **`<mosqlimate-chart>`** — custom element with Shadow DOM observing `chart`, `disease`, `geocode`, `start`, `end`, `uf`, `theme`, `width`, `height`, and `language` attributes (re-renders on change)
+- **Automatic initialization** — charts render on element connect and clean up on disconnect
 
 ---
 
@@ -184,12 +205,21 @@ Example:
 <RtChart disease="dengue" geocode={2300507} />
 ```
 
-### Deliverables
+### Implemented
 
-- [x] React package
-- [x] Vue package
-- [x] Angular package
-- [x] Svelte package
+- **`@mosqlimate/react`** — React wrappers
+- **`@mosqlimate/vue`** — Vue 3 wrappers
+- **`@mosqlimate/angular`** — Angular standalone wrappers (`provideMosqlimate` providers + service)
+- **`@mosqlimate/svelte`** — Svelte 5 wrappers
+
+Every wrapper exposes the same feature set on top of `@mosqlimate/charts`:
+
+- **Generic `<MosqlimateChart>`** — renders any chart by name via `chart`, `params`, `theme`, `language`, `width`, and `height` props
+- **Typed chart components** — `RtChart`, `TemperatureChart`, `AccumulatedWaterfallChart`, `AirChart`, `EggsDensityChart`, `PositivityChart`, `MapChart`, `ScatterChart`, and `EpiscannerChart` with chart-specific props (`disease`, `geocode`, `uf`, `year`, `metric`, `start`, `end`)
+- **Global configuration provider** — `MosqlimateProvider` (React/Vue/Svelte) or `provideMosqlimate` (Angular) to set `api_key`, `sdk_key`, `theme`, and `language` once at the app level
+- **Reactive updates** — charts re-render automatically when props change and are destroyed on unmount
+- **Responsive sizing** — `width`/`height` props with a default of 100% × 350px
+- **Error handling** — render failures are surfaced as an inline `role="alert"` banner
 
 ---
 
@@ -386,14 +416,14 @@ chart.export("png");
 
 # Available Charts
 
-| Category   | Chart Name      | Renderer  | Description                     |
-| ---------- | --------------- | --------- | ------------------------------- |
-| infodengue | `infodengue/rt` | `RtChart` | Rt reproduction rate line chart |
-
-| climate | `climate/temperature` | `TemperatureChart` | Max / avg / min temperature line chart |
-| climate | `climate/accumulated-waterfall` | `AccumulatedWaterfallChart` | Precipitation stacked bar chart |
-| climate | `climate/umid-pressao-med` | `AirChart` | Humidity (line) + pressure (bar) dual-axis |
-| contaovos | `contaovos/eggs_density` | `EggsDensityChart` | Egg count over epiweeks line chart |
-| contaovos | `contaovos/positivity` | `PositivityChart` | Positivity % by location bar chart |
-| contaovos | `contaovos/map` | `MapChart` | Brazil choropleth map of total eggs |
-| contaovos | `contaovos/map/scatter` | `ScatterChart` | Trap location scatter plot (lat/lng) |
+| Category   | Chart Name                      | Renderer                    | Description                                                              |
+| ---------- | ------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| infodengue | `infodengue/rt`                 | `RtChart`                   | Rt reproduction rate line chart                                          |
+| climate    | `climate/temperature`           | `TemperatureChart`          | Max / avg / min temperature line chart                                   |
+| climate    | `climate/accumulated-waterfall` | `AccumulatedWaterfallChart` | Precipitation stacked bar chart                                          |
+| climate    | `climate/umid-pressao-med`      | `AirChart`                  | Humidity (line) + pressure (bar) dual-axis                               |
+| contaovos  | `contaovos/eggs_density`        | `EggsDensityChart`          | Egg count over epiweeks line chart                                       |
+| contaovos  | `contaovos/positivity`          | `PositivityChart`           | Positivity % by location bar chart                                       |
+| contaovos  | `contaovos/map`                 | `MapChart`                  | Brazil choropleth map of total eggs                                      |
+| contaovos  | `contaovos/map/scatter`         | `ScatterChart`              | Trap location scatter plot (lat/lng)                                     |
+| episcanner | `episcanner`                    | `EpiscannerChart`           | Per-UF choropleth map of episcanner metrics (peak week, R0, total cases) |

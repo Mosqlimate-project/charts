@@ -150,6 +150,29 @@ describe("autoInit", () => {
     );
   });
 
+  it("renders episcanner from data-* attrs", async () => {
+    const el = makeElement({
+      "data-chart": "episcanner",
+      "data-disease": "dengue",
+      "data-uf": "CE",
+      "data-year": "2024",
+      "data-metric": "R0",
+    });
+    document.body.appendChild(el);
+
+    const result = await autoInit();
+
+    expect(result.rendered).toBe(1);
+    expect(result.errors).toHaveLength(0);
+    expect(mockRender).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: el,
+        chart: "episcanner",
+        params: { disease: "dengue", uf: "CE", year: 2024, metric: "R0" },
+      }),
+    );
+  });
+
   it("applies container styles from data-* attrs", async () => {
     const el = makeElement({
       "data-chart": "infodengue/rt",

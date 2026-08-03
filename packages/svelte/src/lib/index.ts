@@ -10,6 +10,7 @@ export { default as EggsDensityChart } from "./EggsDensityChart.svelte";
 export { default as PositivityChart } from "./PositivityChart.svelte";
 export { default as MapChart } from "./MapChart.svelte";
 export { default as ScatterChart } from "./ScatterChart.svelte";
+export { default as EpiscannerChart } from "./EpiscannerChart.svelte";
 export type {
   MosqlimateChartProps,
   RtChartProps,
@@ -20,4 +21,5 @@ export type {
   PositivityChartProps,
   MapChartProps,
   ScatterChartProps,
+  EpiscannerChartProps,
 } from "./types";

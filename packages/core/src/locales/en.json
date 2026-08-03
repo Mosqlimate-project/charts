@@ -21,5 +21,12 @@
   "air.humidity_axis": "Humidity (%)",
   "rt.rt": "Rt",
   "rt.threshold": "Threshold",
+  "episcanner.metric.R0": "R0",
+  "episcanner.metric.peak_week": "Peak week",
+  "episcanner.metric.beta": "Beta",
+  "episcanner.metric.gamma": "Gamma",
+  "episcanner.metric.total_cases": "Total cases",
+  "episcanner.metric.alpha": "Alpha",
+  "episcanner.metric.sum_res": "Sum residual",
   "error.loading": "Error loading chart"
 }

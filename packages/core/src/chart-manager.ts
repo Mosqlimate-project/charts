@@ -22,6 +22,7 @@ import {
   PositivityChart,
   MapChart,
   ScatterChart,
+  EpiscannerChart,
 } from "./charts";
 
 let id_counter = 0;
@@ -88,6 +89,7 @@ export class ChartManager {
         ...options,
         theme: options.theme ?? this.config.theme,
         language: lang,
+        maps_base: options.maps_base ?? this.config.maps_base,
       });
 
       this.applyWatermark(container, options.theme ?? this.config.theme);
@@ -164,6 +166,7 @@ export class ChartManager {
       "contaovos/positivity": () => new PositivityChart(),
       "contaovos/map": () => new MapChart(),
       "contaovos/map/scatter": () => new ScatterChart(),
+      episcanner: () => new EpiscannerChart(),
     };
     return (renderers[chart] ?? (() => new PlaceholderRenderer()))();
   }

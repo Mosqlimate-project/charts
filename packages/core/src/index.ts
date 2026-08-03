@@ -20,14 +20,16 @@ export {
   PositivityChart,
   MapChart,
   ScatterChart,
+  EpiscannerChart,
 } from "./charts";
 export type { EChartsOption } from "./charts";
+export { DEFAULT_MAPS_BASE } from "./maps";
 
 import * as echarts from "echarts";
 
-export function registerMap(geoJson: object): void {
+export function registerMap(geoJson: object, name = "brazil"): void {
   echarts.registerMap(
-    "brazil",
+    name,
     geoJson as Parameters<typeof echarts.registerMap>[1],
   );
 }
@@ -42,11 +44,13 @@ export type {
   ChartName,
   Theme,
   Language,
+  EpiscannerMetric,
   InfodengueParams,
   ClimateParams,
   ContaOvosParams,
   ContaOvosPositivityParams,
   ContaOvosMapParams,
+  EpiscannerParams,
   ChartParams,
   InfodengueRtRow,
   ClimateTemperatureRow,
@@ -56,6 +60,7 @@ export type {
   ContaOvosPositivityRow,
   ContaOvosMapStateRow,
   ContaOvosMapScatterRow,
+  EpiscannerRow,
   ChartDataMap,
   ChartData,
   RenderOptions,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type {
   ChartData,
   ChartName,
@@ -13,6 +13,9 @@ import {
   AirChart,
 } from "../charts/climate";
 import { EggsDensityChart, PositivityChart } from "../charts/contaovos";
+import { EpiscannerChart } from "../charts/episcanner";
+
+vi.stubGlobal("VERSION", "0.0.0-test");
 
 function makeContainer(): HTMLElement {
   const div = document.createElement("div");
@@ -243,5 +246,141 @@ describe("PositivityChart", () => {
     const opt = chart.buildOption(data, "light");
     expect(opt.xAxis).toBeDefined();
     expect(opt.series).toBeDefined();
+  });
+});
+
+describe("EpiscannerChart", () => {
+  const geoJson = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: { geocode: "2304400", name: "Fortaleza" },
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [-38.5, -3.8],
+              [-38.4, -3.8],
+              [-38.4, -3.7],
+              [-38.5, -3.7],
+            ],
+          ],
+        },
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => geoJson,
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const row = {
+    disease: "dengue",
+    CID10: "A90",
+    year: 2024,
+    geocode: 2304400,
+    muni_name: "Fortaleza",
+    peak_week: 12,
+    beta: 0.25,
+    gamma: 0.2,
+    R0: 1.5,
+    total_cases: 1200,
+    alpha: 0.01,
+    sum_res: 0.02,
+    ep_ini: "2024-01-01",
+    ep_end: "2024-06-30",
+    ep_dur: 26,
+  };
+
+  async function buildFor(
+    metric: "R0" | "peak_week",
+    data: ChartData<"episcanner">,
+    lang?: "en" | "pt",
+  ) {
+    const chart = new EpiscannerChart();
+    const container = makeContainer();
+    await chart.render(container, data, {
+      target: container,
+      chart: "episcanner",
+      params: { disease: "dengue", uf: "CE", year: 2024, metric },
+    } as RenderOptions);
+    return chart.buildOption(data, "light", lang);
+  }
+
+  const baseData: ChartData<"episcanner"> = {
+    chart: "episcanner",
+    category: "episcanner",
+    data: [row],
+  };
+
+  it("builds a map option using the uf-scoped map", async () => {
+    const opt = await buildFor("R0", baseData);
+    const series = opt.series as unknown[];
+    expect(series).toHaveLength(1);
+    expect((series[0] as { type: string; map: string }).type).toBe("map");
+    expect((series[0] as { map: string }).map).toBe("episcanner-ce");
+    expect(opt.visualMap).toBeDefined();
+  });
+
+  it("maps data rows by geocode and uses the selected metric", async () => {
+    const opt = await buildFor("peak_week", baseData);
+    const series = opt.series as Array<{
+      data: Array<{ name: string; value: number }>;
+    }>;
+    expect(series[0].data[0].name).toBe("2304400");
+    expect(series[0].data[0].value).toBe(12);
+  });
+
+  it("sets visualMap min/max from metric values", async () => {
+    const data: ChartData<"episcanner"> = {
+      chart: "episcanner",
+      category: "episcanner",
+      data: [row, { ...row, geocode: 2303700, R0: 2.1 }],
+    };
+    const opt = await buildFor("R0", data);
+    const vm = opt.visualMap as { min: number; max: number };
+    expect(vm.min).toBe(1.5);
+    expect(vm.max).toBe(2.1);
+  });
+
+  it("builds option structure with portuguese label", async () => {
+    const opt = await buildFor("peak_week", baseData, "pt");
+    expect(opt.tooltip).toBeDefined();
+  });
+
+  it("fetches and registers the uf-scoped map before rendering", async () => {
+    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
+    const chart = new EpiscannerChart();
+    const container = makeContainer();
+    await chart.render(container, baseData, {
+      target: container,
+      chart: "episcanner",
+      params: { disease: "dengue", uf: "CE", year: 2024, metric: "R0" },
+    } as RenderOptions);
+
+    const echartsGlobal = (
+      globalThis as unknown as {
+        echarts: { registerMap: ReturnType<typeof vi.fn> };
+      }
+    ).echarts;
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://unpkg.com/@mosqlimate/charts@0.0.0-test/dist/maps/ce.json",
+    );
+    expect(echartsGlobal.registerMap).toHaveBeenCalledWith(
+      "episcanner-ce",
+      geoJson,
+    );
   });
 });

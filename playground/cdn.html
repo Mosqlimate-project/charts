@@ -133,6 +133,33 @@
       ></mosqlimate-chart>
     </div>
 
+    <h2>
+      episcanner — Episcanner <span class="badge">SP · dengue · 2024</span>
+    </h2>
+    <div class="grid-2">
+      <div>
+        <div
+          data-chart="episcanner"
+          data-disease="dengue"
+          data-uf="SP"
+          data-year="2024"
+          data-metric="R0"
+          style="height: 350px"
+        ></div>
+      </div>
+
+      <div>
+        <mosqlimate-chart
+          chart="episcanner"
+          disease="dengue"
+          uf="SP"
+          year="2024"
+          metric="R0"
+          style="height: 350px"
+        ></mosqlimate-chart>
+      </div>
+    </div>
+
     <div class="log" id="log">
       <span id="loader">Loading...</span>
     </div>
@@ -141,6 +168,10 @@
     <script>
       (async () => {
         try {
+          Mosqlimate.configure({
+            maps_base: "/packages/core/dist/maps",
+          });
+
           const result = await Mosqlimate.autoInit({
             api_key: window.__MOSQLIMATE_API_KEY__,
           });

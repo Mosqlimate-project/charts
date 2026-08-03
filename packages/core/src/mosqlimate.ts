@@ -10,9 +10,11 @@ import { ChartManager } from "./chart-manager";
 import { autoInit } from "./declarative";
 import type { AutoInitOptions, AutoInitResult } from "./declarative";
 import { registerChartElement } from "./web-component";
+import { DEFAULT_MAPS_BASE } from "./maps";
 
 interface InternalConfig extends MosqlimateConfig {
   api_base: string;
+  maps_base: string;
 }
 
 let API_BASE = "https://api.mosqlimate.org";
@@ -24,6 +26,7 @@ try {
 
 const DEFAULT_CONFIG: InternalConfig = {
   api_base: API_BASE,
+  maps_base: DEFAULT_MAPS_BASE,
   theme: "light",
   language: "en",
 };
@@ -42,6 +45,7 @@ export interface MosqlimateStatic {
   configure(config: {
     theme?: Theme;
     language?: Language;
+    maps_base?: string;
     sdk_key?: string;
     api_key?: string;
   }): void;
@@ -65,6 +69,7 @@ export const Mosqlimate: MosqlimateStatic = {
       {
         theme: config.theme ?? DEFAULT_CONFIG.theme,
         language: config.language ?? DEFAULT_CONFIG.language,
+        maps_base: config.maps_base ?? DEFAULT_CONFIG.maps_base,
       },
       DEFAULT_CONFIG.api_base,
       config.sdk_key,
